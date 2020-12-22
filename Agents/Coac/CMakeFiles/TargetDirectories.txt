@@ -1,0 +1,3 @@
+/Users/alardutp/Downloads/referee-nim/Agents/Coac/CMakeFiles/rebuild_cache.dir
+/Users/alardutp/Downloads/referee-nim/Agents/Coac/CMakeFiles/edit_cache.dir
+/Users/alardutp/Downloads/referee-nim/Agents/Coac/CMakeFiles/main.dir

@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/alardutp/Downloads/referee-nim/Agents/Coac/main.cpp
+iostream
+-
+string
+-
+vector
+-
+algorithm
+-
+tuple
+-
+climits
+-
+chrono
+-
+

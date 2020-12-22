@@ -1,0 +1,62 @@
+from jinja2 import FileSystemLoader, Environment
+from pathlib import Path
+
+import subprocess
+import os
+
+AGENTS_FOLDER = Path('Agents')
+TMP_FOLDER = AGENTS_FOLDER / 'templates'
+LOL_FOLDER = AGENTS_FOLDER / 'LOL'
+
+TMPL = Environment(loader=FileSystemLoader(str(TMP_FOLDER))).get_template('template.cpp')
+
+AGENT_SRC = LOL_FOLDER / 'agent.cpp'
+AGENT_BIN = LOL_FOLDER / 'agent'
+
+GP_OPERAND = [
+    'cost',
+    'attack',
+    'defense',
+    'abilities',
+    'playerHP',
+    'enemyHP',
+    'cardDraw',
+    'enemyTotalHP',
+    'ownTotalHP',
+    'enemyTotalAttack',
+    'ownTotalAttack',
+    'enemyAttack',
+    'enemyDefence',
+    'enemyAbilities'
+]
+
+
+REFEREE = './referee/Tester'
+# BASELINE = 'python3 Agents/Baseline1/main.py'
+BASELINE = './Agents/Chad/agent/target/release/agent'
+# AGENT = f'./{AGENT_BIN}'
+AGENT = './Agents/Chad/agent/target/release/agent'
+GAMES = 20
+
+
+def referee():
+    os.system(f'g++ -std=c++17 {AGENT_SRC} -o {AGENT_BIN}')
+    ret = subprocess.check_output([
+        f'{REFEREE}',
+        f'--baseline="{BASELINE}"',
+        f'--agent="{AGENT}"',
+        f'--games={GAMES}',
+    ]).decode('utf8')
+    return float(ret)
+
+
+def gene2expr(gene):
+    for i, r in enumerate(GP_OPERAND):
+        gene = gene.replace(f'#{i}', r)
+    return gene
+
+
+def fitness(genes):
+    exprs = [gene2expr(gene.decode()) for gene in genes]
+    TMPL.stream(exprs=exprs).dump(str(AGENT_SRC))
+    return referee()
