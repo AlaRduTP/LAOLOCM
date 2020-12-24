@@ -1,3 +1,11 @@
 .DS_Store
 
 referee/Tester
+
+__pycache__/
+caller.cpp
+caller.h
+caller.o
+fitness.o
+main
+main.o
