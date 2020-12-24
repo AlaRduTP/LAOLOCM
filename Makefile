@@ -2,14 +2,20 @@ target = main
 cybridge = caller
 
 CC = g++
-CFLAGS = -std=c++17 `python3-config --cflags`
+CCFLAGS = -std=c++17 -fPIC
+
+CFLAGS = `python3-config --cflags`
 LDFLAGS = `python3-config --ldflags`
+
+MAKE = make
 
 all:
 	cython $(cybridge).pyx -o $(cybridge).cpp
-	$(CC) $(CFLAGS) -c *.cpp
-	$(CC) $(LDFLAGS) *.o -o $(target)
+	$(CC) $(CCFLAGS) -c *.cpp $(CFLAGS)
+	$(CC) *.o $(LDFLAGS) -o $(target)
+	$(MAKE) -C referee
 
 clean:
-	rm -f $(cybridge).{cpp,h} *.o $(target)
+	rm -f $(cybridge).cpp $(cybridge).h *.o $(target)
 	rm -rf __pycache__
+	$(MAKE) -C referee clean
