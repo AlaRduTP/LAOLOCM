@@ -305,7 +305,7 @@ int main()
 		cout << "Generation " << i << ": " << DNAs[0]->fitness() << endl;
 		cout << "Generation " << i << ": " << DNAs[0]->trees[0]->offspring_count << endl;
 
-		if (DNAs[0]->fitness() > 100000)
+		if (DNAs[0]->fitness() >= 1)
 			break;
 	}
 }
