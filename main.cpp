@@ -279,6 +279,8 @@ bool compare(DNA *a, DNA *b)
 
 int main()
 {
+	fitness_initialize();
+
 	ios::sync_with_stdio(false);
 	cin.tie(0);
 
@@ -308,4 +310,6 @@ int main()
 		if (DNAs[0]->fitness() >= 1)
 			break;
 	}
+	
+	fitness_finalize();
 }
