@@ -32,10 +32,8 @@ GP_OPERAND = [
 
 
 REFEREE = './referee/Tester'
-# BASELINE = 'python3 Agents/Baseline1/main.py'
 BASELINE = './Agents/Chad/agent/target/release/agent'
-# AGENT = f'./{AGENT_BIN}'
-AGENT = './Agents/Chad/agent/target/release/agent'
+AGENT = f'./{AGENT_BIN}'
 GAMES = 20
 
 
@@ -59,4 +57,4 @@ def gene2expr(gene):
 def fitness(genes):
     exprs = [gene2expr(gene.decode()) for gene in genes]
     TMPL.stream(exprs=exprs).dump(str(AGENT_SRC))
-    return referee()
+    return referee() ** 2
