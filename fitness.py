@@ -40,7 +40,7 @@ GAMES = 20
 
 
 def referee():
-    os.system(f'g++ -std=c++17 {AGENT_SRC} -o {AGENT_BIN}')
+    os.system(f'g++ -std=c++17 -O3 {AGENT_SRC} -o {AGENT_BIN}')
     ret = subprocess.check_output([
         f'{REFEREE}',
         f'--baseline="{BASELINE}"',

@@ -2,7 +2,7 @@ target = main
 cybridge = caller
 
 CC = g++
-CCFLAGS = -std=c++17 -fPIC
+CCFLAGS = -std=c++17 -fPIC -O3
 
 PYVERSION := $(shell python3 -c "import sys; print(sys.version_info.minor)")
 
