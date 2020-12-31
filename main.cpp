@@ -18,7 +18,11 @@ const int DNA_COUNT = 20;
 const int LEFT_AMOUNT = 10;
 const double MUTATION_CHANCE = 0.5;
 const int GENERATION_COUNT = 10;
-const vector<int> TREE_VARIBALS[3] = {{0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 7, 8, 9, 10, 11, 12, 13}};
+const vector<int> TREE_VARIBALS[3] = {
+	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
+	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+	{1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18},
+};
 
 double rand_double()
 {
@@ -159,7 +163,7 @@ public:
 			switch (operate)
 			{
 			case 's':
-				return "(" + childs[0]->to_string() + "**2)";
+				return "p2(" + childs[0]->to_string() + ")";
 			case 'r':
 				return "sqrt(" + childs[0]->to_string() + ")";
 			case 'l':
@@ -167,7 +171,7 @@ public:
 			case 'e':
 				return "exp(" + childs[0]->to_string() + ")";
 			}
-		return is_variable ? "#" + std::to_string(variable_index) : std::to_string(value);
+		return is_variable ? "{" + std::to_string(variable_index) + "}" : std::to_string(value);
 	}
 
 	void delete_child()
@@ -310,6 +314,6 @@ int main()
 		if (DNAs[0]->fitness() >= 1)
 			break;
 	}
-	
+
 	fitness_finalize();
 }

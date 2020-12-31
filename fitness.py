@@ -14,13 +14,18 @@ AGENT_SRC = LOL_FOLDER / 'agent.cpp'
 AGENT_BIN = LOL_FOLDER / 'agent'
 
 GP_OPERAND = [
-    'cost',
-    'attack',
-    'defense',
-    'abilities',
-    'playerHP',
-    'enemyHP',
-    'cardDraw',
+    'cost_',
+    'attack_',
+    'defense_',
+    'abilities_[0]',
+    'abilities_[1]',
+    'abilities_[2]',
+    'abilities_[3]',
+    'abilities_[4]',
+    'abilities_[5]',
+    'playerHP_',
+    'enemyHP_',
+    'cardDraw_',
     'enemyTotalHP',
     'ownTotalHP',
     'enemyTotalAttack',
@@ -50,7 +55,7 @@ def referee():
 
 def gene2expr(gene):
     for i, r in enumerate(GP_OPERAND):
-        gene = gene.replace(f'#{i}', r)
+        gene = gene.replace(f'{{{i}}}', r)
     return gene
 
 

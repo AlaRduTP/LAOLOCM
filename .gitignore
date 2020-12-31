@@ -3,6 +3,7 @@
 referee/Tester
 
 __pycache__/
+.vscode/
 caller.cpp
 caller.h
 caller.o
