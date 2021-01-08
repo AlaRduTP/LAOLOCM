@@ -39,7 +39,7 @@ GP_OPERAND = [
 REFEREE = './referee/Tester'
 # BASELINE = str(LOL_FOLDER / 'baseline')
 # BASELINE = './Agents/Chad/agent/target/release/agent'
-BASELINE = 'python3 Agents/Baseline1/main.py'
+BASELINE = 'python3\\ Agents/Baseline1/main.py'
 AGENT = f'./{AGENT_BIN}'
 GAMES = 10
 
