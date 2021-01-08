@@ -18,7 +18,12 @@ const int DNA_COUNT = 20;
 const int LEFT_AMOUNT = 10;
 const double MUTATION_CHANCE = 0.5;
 const int GENERATION_COUNT = 10;
-const vector<int> TREE_VARIBALS[3] = {{0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 7, 8, 9, 10, 11, 12, 13}};
+const int TREE_COUNT = 1;
+const vector<int> TREE_VARIBALS[3] = {
+	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
+	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+	{1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18},
+};
 
 double rand_double()
 {
@@ -154,12 +159,12 @@ public:
 	string to_string()
 	{
 		if (child_length == 2)
-			return '(' + childs[0]->to_string() + operate + childs[1]->to_string() + ')';
+			return '(' + childs[0]->to_string() + operate + ' ' + childs[1]->to_string() + ')';
 		else if (child_length == 1)
 			switch (operate)
 			{
 			case 's':
-				return "(" + childs[0]->to_string() + "**2)";
+				return "p2(" + childs[0]->to_string() + ")";
 			case 'r':
 				return "sqrt(" + childs[0]->to_string() + ")";
 			case 'l':
@@ -167,7 +172,7 @@ public:
 			case 'e':
 				return "exp(" + childs[0]->to_string() + ")";
 			}
-		return is_variable ? "#" + std::to_string(variable_index) : std::to_string(value);
+		return is_variable ? "{" + std::to_string(variable_index) + "}" : std::to_string(value);
 	}
 
 	void delete_child()
@@ -185,14 +190,14 @@ public:
 class DNA
 {
 public:
-	Node *trees[3];
+	Node *trees[TREE_COUNT];
 	double score = -1;
 
 	DNA(DNA *dna = NULL, DNA *cross = NULL)
 	{
 		if (dna)
 		{
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < TREE_COUNT; i++)
 			{
 				if (cross)
 					trees[i] = new Node(i, NULL, dna->trees[i], cross->trees[i]);
@@ -202,7 +207,7 @@ public:
 		}
 		else
 		{
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < TREE_COUNT; i++)
 				trees[i] = new Node(i, NULL);
 		}
 	}
@@ -210,7 +215,7 @@ public:
 	DNA *mutation()
 	{
 		DNA *ret = new DNA(this);
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < TREE_COUNT; i++)
 		{
 			Node *change = ret->trees[i]->random_child(true);
 
@@ -247,15 +252,16 @@ public:
 		if (score != -1)
 			return score;
 		vector<string> genes;
-		genes.push_back(trees[0]->to_string());
-		genes.push_back(trees[1]->to_string());
-		genes.push_back(trees[2]->to_string());
-		return score = ::fitness(genes);
+		for (int i = 0; i < TREE_COUNT; i++)
+			genes.push_back(trees[i]->to_string());
+		score = ::fitness(genes);
+		cout << '.' << flush;
+		return score;
 	}
 
 	void destory()
 	{
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < TREE_COUNT; i++)
 		{
 			trees[i]->delete_child();
 			delete trees[i];
@@ -303,6 +309,7 @@ int main()
 		for (int j = LEFT_AMOUNT; j < DNA_COUNT; j++)
 			DNAs[j]->destory();
 
+		cout << endl;
 		cout << "Generation " << i << ": " << DNAs[0]->trees[0]->to_string() << endl;
 		cout << "Generation " << i << ": " << DNAs[0]->fitness() << endl;
 		cout << "Generation " << i << ": " << DNAs[0]->trees[0]->offspring_count << endl;
@@ -310,6 +317,6 @@ int main()
 		if (DNAs[0]->fitness() >= 1)
 			break;
 	}
-	
+
 	fitness_finalize();
 }
