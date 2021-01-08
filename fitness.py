@@ -37,9 +37,10 @@ GP_OPERAND = [
 
 
 REFEREE = './referee/Tester'
-BASELINE = './Agents/Chad/agent/target/release/agent'
+BASELINE = str(LOL_FOLDER / 'baseline')
+# BASELINE = './Agents/Chad/agent/target/release/agent'
 AGENT = f'./{AGENT_BIN}'
-GAMES = 20
+GAMES = 10
 
 
 def referee():
