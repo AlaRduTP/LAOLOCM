@@ -293,7 +293,12 @@ int main(int argc, char *argv[])
 
 	srand(time(NULL));
 	fstream file;
-	if (argc > 1)
+	if (argc != 2)
+	{
+		cout << "usage: ./main <filename>|none" << endl;
+		return 0;
+	}
+	if (string(argv[1]) != "none")
 		file.open(argv[1], ios::out | ios::app);
 
 	DNA *DNAs[DNA_COUNT];
@@ -318,12 +323,13 @@ int main(int argc, char *argv[])
 		cout << DNAs[0]->fitness() << endl;
 		if (file)
 		{
-			file << "Generation " << i << endl;
+			file << "Generation " << i << endl
+				 << "Fitness: ";
 			for (int j = 0; j < LEFT_AMOUNT; j++)
-			{
+				file << DNAs[j]->fitness() << " ";
+			file << endl;
+			for (int j = 0; j < LEFT_AMOUNT; j++)
 				file << DNAs[j]->trees[0]->to_string() << endl;
-				file << DNAs[j]->fitness() << endl;
-			}
 		}
 
 		if (DNAs[0]->fitness() >= 1)
