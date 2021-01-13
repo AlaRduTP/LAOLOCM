@@ -10,3 +10,4 @@ caller.o
 fitness.o
 main
 main.o
+output.txt
