@@ -51,8 +51,8 @@ def referee():
         f'--baseline="{BASELINE}"',
         f'--agent="{AGENT}"',
         f'--games={GAMES}',
-    ]).decode('utf8')
-    return float(ret)
+    ]).decode('utf8').split('\n')
+    return ret
 
 
 def gene2expr(gene):
@@ -64,4 +64,11 @@ def gene2expr(gene):
 def fitness(genes):
     exprs = [gene2expr(gene.decode()) for gene in genes]
     TMPL.stream(exprs=exprs).dump(str(AGENT_SRC))
-    return referee() ** 2
+
+    result = referee()
+
+    baseline_hps = [*map(int, result[0].split())]
+    agent_hps = [*map(int, result[1].split())]
+
+    avg_hp_diff = sum(a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
+    return avg_hp_diff
