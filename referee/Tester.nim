@@ -50,7 +50,7 @@ when isMainModule:
         var output = process.outputStream.newInput
         
         # discard the warning line
-        discard output.getLine
+        # discard output.getLine
 
         let health1 = output.getInt
         let health2 = output.getInt
