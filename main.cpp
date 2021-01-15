@@ -6,30 +6,61 @@
 #include <time.h>	/* 時間相關函數 */
 #include <string>
 #include <fstream>
+#include <sstream>
+#include <unordered_map>
+#include <type_traits>
 #include "fitness.h"
 
 using namespace std;
 
-const int VALUE_MAX = 100;
-const int VALUE_MIN = -100;
-const int CHANGE_WEIGHT = 10;
-const int REPLACE_WEIGHT = 10;
-const double X_CHANCE = 0.5;
-const int DNA_COUNT = 20;
-const int LEFT_AMOUNT = 10;
-const double MUTATION_CHANCE = 0.5;
-const int GENERATION_COUNT = 10;
+double rand_double()
+{
+	return (double)rand() / RAND_MAX;
+}
+
+unordered_map<string, string> config;
+
+template <typename T>
+T get_config(string key)
+{
+	if (config.empty())
+	{
+		fstream file;
+		file.open("config", ios::in);
+		string line;
+		while (getline(file, line))
+		{
+			istringstream is_line(line);
+			string key;
+			if (getline(is_line, key, '='))
+			{
+				string value;
+				if (getline(is_line, value))
+					config.insert({key, value});
+			}
+		}
+	}
+	if (is_same_v<T, int>)
+		return stoi(config[key]);
+	if (is_same_v<T, double>)
+		return stod(config[key]);
+}
+
+const int VALUE_MAX = get_config<int>("VALUE_MAX");
+const int VALUE_MIN = get_config<int>("VALUE_MIN");
+const int CHANGE_WEIGHT = get_config<int>("CHANGE_WEIGHT");
+const int REPLACE_WEIGHT = get_config<int>("REPLACE_WEIGHT");
+const double X_CHANCE = get_config<double>("X_CHANCE");
+const int DNA_COUNT = get_config<int>("DNA_COUNT");
+const int LEFT_AMOUNT = get_config<int>("LEFT_AMOUNT");
+const double MUTATION_CHANCE = get_config<double>("MUTATION_CHANCE");
+const int GENERATION_COUNT = get_config<int>("GENERATION_COUNT");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
 	{1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18},
 };
-
-double rand_double()
-{
-	return (double)rand() / RAND_MAX;
-}
 
 class Node
 {
