@@ -18,6 +18,9 @@ when isMainModule:
     var wins1 = 0
     var wins2 = 0
 
+    var hps1 = newSeq[int](0)
+    var hps2 = newSeq[int](0)
+
     for kind, key, value in getOpt():
       if key == "games":   games   = value.parseInt
       if key == "plain":   plain   = value.parseBool
@@ -45,15 +48,25 @@ when isMainModule:
       options = {poStdErrToStdOut},
       afterRunEvent = proc (id: int; process: Process) =
         var output = process.outputStream.newInput
+        
         # discard the warning line
-        discard output.getLine
+        # discard output.getLine
+
+        let health1 = output.getInt
+        let health2 = output.getInt
+
         let score1 = output.getInt
         let score2 = output.getInt
+        
         let error = score1 < 0 or score2 < 0
 
         sofar += 1
         wins1 += score1.max(0)
         wins2 += score2.max(0)
+
+        if score1 > -1 and score2 > -1:
+          hps1.add(health1)
+          hps2.add(health2)
 
         # In this mode only final results are reported.
         if plain:
@@ -73,10 +86,8 @@ when isMainModule:
     )
 
     if plain:
-      # echo &"{wins1} {wins2}"
-      if wins1 > 0 or wins2 > 0:
-        echo &"{wins2 / (wins1 + wins2)}"
-      else:
-        echo "0"
+      echo hps1.join(" ")
+      echo hps2.join(" ")
+      echo &"{wins1} {wins2}"
 
   main()

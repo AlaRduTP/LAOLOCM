@@ -10,12 +10,15 @@ func newInput * (stream: Stream): Input {.inline.} =
   Input(stream: stream)
 
 proc getLine * (input: Input): string {.inline.} =
-  input.stream.readLine
+  while true:
+    let line = input.stream.readLine
+    if not line.startsWith("WARNING"):
+      return line
 
 proc getStr * (input: Input): string =
   while true:
     if input.line == "":
-      input.line = input.stream.readLine
+      input.line = input.getLine
 
     for part in input.line.splitWhitespace:
       input.line.delete(0, part.len)

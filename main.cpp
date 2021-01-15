@@ -5,6 +5,7 @@
 #include <stdlib.h> /* 亂數相關函數 */
 #include <time.h>	/* 時間相關函數 */
 #include <string>
+#include <fstream>
 #include "fitness.h"
 
 using namespace std;
@@ -283,7 +284,7 @@ bool compare(DNA *a, DNA *b)
 		return v1 > v2;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	fitness_initialize();
 
@@ -291,6 +292,14 @@ int main()
 	cin.tie(0);
 
 	srand(time(NULL));
+	fstream file;
+	if (argc != 2)
+	{
+		cout << "usage: ./main <filename>|none" << endl;
+		return 0;
+	}
+	if (string(argv[1]) != "none")
+		file.open(argv[1], ios::out | ios::app);
 
 	DNA *DNAs[DNA_COUNT];
 	for (int i = 0; i < LEFT_AMOUNT; i++)
@@ -309,14 +318,24 @@ int main()
 		for (int j = LEFT_AMOUNT; j < DNA_COUNT; j++)
 			DNAs[j]->destory();
 
-		cout << endl;
-		cout << "Generation " << i << ": " << DNAs[0]->trees[0]->to_string() << endl;
-		cout << "Generation " << i << ": " << DNAs[0]->fitness() << endl;
-		cout << "Generation " << i << ": " << DNAs[0]->trees[0]->offspring_count << endl;
+		cout << "\nGeneration " << i << endl;
+		cout << DNAs[0]->trees[0]->to_string() << endl;
+		cout << DNAs[0]->fitness() << endl;
+		if (file)
+		{
+			file << "Generation " << i << endl
+				 << "Fitness: ";
+			for (int j = 0; j < LEFT_AMOUNT; j++)
+				file << DNAs[j]->fitness() << " ";
+			file << endl;
+			for (int j = 0; j < LEFT_AMOUNT; j++)
+				file << DNAs[j]->trees[0]->to_string() << endl;
+		}
 
 		if (DNAs[0]->fitness() >= 1)
 			break;
 	}
-
+	if (file)
+		file.close();
 	fitness_finalize();
 }
