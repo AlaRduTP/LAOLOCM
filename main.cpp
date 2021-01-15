@@ -8,7 +8,6 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
-#include <type_traits>
 #include "fitness.h"
 
 using namespace std;
@@ -75,15 +74,15 @@ public:
 	int offspring_count = 0;
 	int tree_index;
 
-	Node(int index, Node *p, double child_chance = 0.5) : parent(p), tree_index(index)
+	Node(int index, Node *p, int level = 0) : parent(p), tree_index(index)
 	{
-		if (rand_double() < child_chance)
+		if (level < 3)
 		{
 			child_length = rand_double() < 0.5 ? 1 : 2;
 			change();
 			for (int i = 0; i < child_length; i++)
 			{
-				childs[i] = new Node(tree_index, this, child_chance - 0.2);
+				childs[i] = new Node(tree_index, this, level + 1);
 				offspring_count += 1 + childs[i]->offspring_count;
 			}
 		}
