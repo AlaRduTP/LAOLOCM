@@ -70,5 +70,8 @@ def fitness(genes):
     baseline_hps = [*map(int, result[0].split())]
     agent_hps = [*map(int, result[1].split())]
 
+    if not agent_hps:
+        return -999
+
     avg_hp_diff = sum(a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
     return avg_hp_diff
