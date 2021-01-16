@@ -58,13 +58,16 @@ T get_config(string key)
 
 const int VALUE_MAX = get_config<int>("VALUE_MAX");
 const int VALUE_MIN = get_config<int>("VALUE_MIN");
-const int CHANGE_WEIGHT = get_config<int>("CHANGE_WEIGHT");
-const int REPLACE_WEIGHT = get_config<int>("REPLACE_WEIGHT");
+const int CHANGE_CHANCE = get_config<double>("CHANGE_CHANCE");
 const double X_CHANCE = get_config<double>("X_CHANCE");
 const int DNA_COUNT = get_config<int>("DNA_COUNT");
 const int LEFT_AMOUNT = get_config<int>("LEFT_AMOUNT");
 const double MUTATION_CHANCE = get_config<double>("MUTATION_CHANCE");
 const int GENERATION_COUNT = get_config<int>("GENERATION_COUNT");
+const int GAME_COUNT_CAP = get_config<int>("GAME_COUNT_CAP");
+const int GAME_COUNT_C1 = get_config<int>("GAME_COUNT_C1");
+const int GAME_COUNT_C2 = get_config<int>("GAME_COUNT_C2");
+const int GAME_COUNT_C3 = get_config<int>("GAME_COUNT_C3");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
@@ -235,6 +238,7 @@ class DNA
 public:
 	Node *trees[TREE_COUNT];
 	double score = -1;
+	int game_played_count = 0;
 
 	DNA(DNA *dna = NULL, DNA *cross = NULL)
 	{
@@ -262,8 +266,7 @@ public:
 		{
 			Node *change = ret->trees[i]->random_child(true);
 
-			int random = rand() % (CHANGE_WEIGHT + REPLACE_WEIGHT);
-			if (random < CHANGE_WEIGHT || change == ret->trees[i])
+			if (rand_double() < CHANGE_CHANCE || change == ret->trees[i])
 				change->change();
 			else
 			{
@@ -292,12 +295,16 @@ public:
 
 	double fitness()
 	{
-		if (score != -1)
+		int need_game_count = min(GAME_COUNT_CAP, GAME_COUNT_C1 * generation * generation + GAME_COUNT_C2 * generation + GAME_COUNT_C3);
+		if (game_played_count > 0 && need_game_count - game_played_count < 8 && need_game_count < GAME_COUNT_CAP)
 			return score;
+
 		vector<string> genes;
 		for (int i = 0; i < TREE_COUNT; i++)
 			genes.push_back(trees[i]->to_string());
-		score = ::fitness(genes, min(50, generation + 5));
+		int new_score = ::fitness(genes, need_game_count - game_played_count);
+		score = (score * game_played_count + new_score * (need_game_count - game_played_count)) / need_game_count;
+		game_played_count = need_game_count;
 		cout << '.' << flush;
 		return score;
 	}
@@ -349,18 +356,19 @@ int main(int argc, char *argv[])
 
 	for (generation = 0; generation < GENERATION_COUNT; generation++)
 	{
+		file << "\nSpawning" << endl;
 		for (int j = LEFT_AMOUNT; j < DNA_COUNT; j++)
 		{
 			if ((double)rand() / RAND_MAX < MUTATION_CHANCE)
 			{
 				DNAs[j] = DNAs[j % LEFT_AMOUNT]->mutation();
-				file << DNAs[j % LEFT_AMOUNT]->trees[0]->to_string() << " mutates " << DNAs[j]->trees[0]->to_string() << endl;
+				file << DNAs[j % LEFT_AMOUNT]->trees[0]->to_string() << " 變異出 " << DNAs[j]->trees[0]->to_string() << endl;
 			}
 			else
 			{
 				int cross_index = rand() % LEFT_AMOUNT;
 				DNAs[j] = DNAs[j % LEFT_AMOUNT]->cross(DNAs[cross_index]);
-				file << DNAs[j % LEFT_AMOUNT]->trees[0]->to_string() << " and " << DNAs[cross_index]->trees[0]->to_string() << " cross "
+				file << DNAs[j % LEFT_AMOUNT]->trees[0]->to_string() << " 和 " << DNAs[cross_index]->trees[0]->to_string() << " 交配出 "
 					 << DNAs[j]->trees[0]->to_string() << endl;
 			}
 		}
