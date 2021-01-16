@@ -205,7 +205,7 @@ public:
 	string to_string()
 	{
 		if (child_length == 2)
-			return '(' + childs[0]->to_string() + operate + ' ' + childs[1]->to_string() + ')';
+			return '(' + childs[0]->to_string() + ' ' + operate + ' ' + childs[1]->to_string() + ')';
 		else if (child_length == 1)
 			switch (operate)
 			{
