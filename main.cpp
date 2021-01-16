@@ -68,6 +68,7 @@ const int GAME_COUNT_CAP = get_config<int>("GAME_COUNT_CAP");
 const int GAME_COUNT_C1 = get_config<int>("GAME_COUNT_C1");
 const int GAME_COUNT_C2 = get_config<int>("GAME_COUNT_C2");
 const int GAME_COUNT_C3 = get_config<int>("GAME_COUNT_C3");
+const int REFRESH_INTERVAL = get_config<int>("REFRESH_INTERVAL");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
@@ -247,7 +248,7 @@ class DNA
 public:
 	Node *trees[TREE_COUNT];
 	double score = -1;
-	int game_played_count = 0;
+	int last_generation = -99999;
 
 	DNA(DNA *dna = NULL, DNA *cross = NULL)
 	{
@@ -305,15 +306,14 @@ public:
 	double fitness()
 	{
 		int need_game_count = min(GAME_COUNT_CAP, GAME_COUNT_C1 * generation * generation + GAME_COUNT_C2 * generation + GAME_COUNT_C3);
-		if ((game_played_count > 0 && need_game_count - game_played_count < 8 && need_game_count < GAME_COUNT_CAP) || game_played_count == GAME_COUNT_CAP)
+		if (generation - last_generation < REFRESH_INTERVAL)
 			return score;
 
 		vector<string> genes;
 		for (int i = 0; i < TREE_COUNT; i++)
 			genes.push_back(trees[i]->to_string());
-		int new_score = ::fitness(genes, need_game_count - game_played_count);
-		score = (score * game_played_count + new_score * (need_game_count - game_played_count)) / need_game_count;
-		game_played_count = need_game_count;
+		score = ::fitness(genes, need_game_count);
+		last_generation = generation;
 		cout << '.' << flush;
 		return score;
 	}
