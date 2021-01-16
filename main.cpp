@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
 				file << DNAs[j]->trees[0]->to_string() << endl;
 		}
 
-		if (DNAs[0]->fitness() >= 20)
+		if (DNAs[0]->fitness() >= 30)
 			break;
 	}
 	if (file)
