@@ -205,19 +205,28 @@ public:
 	string to_string()
 	{
 		if (child_length == 2)
-			return '(' + childs[0]->to_string() + ' ' + operate + ' ' + childs[1]->to_string() + ')';
+		{
+			string child1_string = childs[1]->to_string();
+			// avoid (1) - (-2) turns into (1--2)
+			return '(' + childs[0]->to_string() + operate + (operate == child1_string[0] ? " " : "") + child1_string + ')';
+		}
 		else if (child_length == 1)
+		{
+			string child0_string = childs[0]->to_string();
+			if (child0_string[0] != '(')
+				child0_string = '(' + child0_string + ')';
 			switch (operate)
 			{
 			case 's':
-				return "p2(" + childs[0]->to_string() + ")";
+				return "p2" + child0_string;
 			case 'r':
-				return "sqrt(" + childs[0]->to_string() + ")";
+				return "sqrt" + child0_string;
 			case 'l':
-				return "log(" + childs[0]->to_string() + ")";
+				return "log" + child0_string;
 			case 'e':
-				return "exp(" + childs[0]->to_string() + ")";
+				return "exp" + child0_string;
 			}
+		}
 		return is_variable ? "{" + std::to_string(variable_index) + "}" : std::to_string(value);
 	}
 
