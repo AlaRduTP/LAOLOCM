@@ -296,7 +296,7 @@ public:
 	double fitness()
 	{
 		int need_game_count = min(GAME_COUNT_CAP, GAME_COUNT_C1 * generation * generation + GAME_COUNT_C2 * generation + GAME_COUNT_C3);
-		if (game_played_count > 0 && need_game_count - game_played_count < 8 && need_game_count < GAME_COUNT_CAP)
+		if ((game_played_count > 0 && need_game_count - game_played_count < 8 && need_game_count < GAME_COUNT_CAP) || game_played_count == GAME_COUNT_CAP)
 			return score;
 
 		vector<string> genes;
