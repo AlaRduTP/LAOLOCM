@@ -7,9 +7,9 @@ int fitness_initialize() {
     return ret;
 }
 
-float fitness(std::vector<std::string> & genes) {
+float fitness(std::vector<std::string> & genes, int game_count) {
     PyImport_ImportModule("caller");
-    float ret = call_fitness(genes);
+    float ret = call_fitness(genes, game_count);
     return ret;
 }
 
