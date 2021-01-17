@@ -2,7 +2,7 @@ import std / [osproc, parseopt, strformat, strutils]
 import Engine / Input
 import Research / IOHelpers
 
-const SH_RANDOM = """`hexdump -n 2 -e '/2 "%u"' /dev/urandom`""""
+# const SH_RANDOM = """`hexdump -n 2 -e '/2 "%u"' /dev/urandom`""""
 
 when isMainModule:
   proc main(): void =
@@ -40,7 +40,7 @@ when isMainModule:
 
     var commands = newSeq[string](games)
     for index in commands.low .. commands.high:
-      commands[index] = &"""{referee} -p1 "{baseline}" -p2 "{agent}" -d "draftChoicesSeed={SH_RANDOM} seed={SH_RANDOM} shufflePlayer0Seed={SH_RANDOM} shufflePlayer1Seed={SH_RANDOM}""""
+      commands[index] = &"""{referee} -p1 "{baseline}" -p2 "{agent}" -d "draftChoicesSeed={index} seed={index} shufflePlayer0Seed={index} shufflePlayer1Seed={index}""""
 
     discard execProcesses(
       cmds = commands,

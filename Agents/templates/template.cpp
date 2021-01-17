@@ -308,7 +308,8 @@ struct Creature
 
 int main()
 {
-    srand(time(NULL));
+    // srand(time(NULL));
+    srand(28976);
     const cardsInfo cards;
     while (1)
     {
