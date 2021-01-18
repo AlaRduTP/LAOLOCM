@@ -8,7 +8,8 @@ AGENTS_FOLDER = Path('Agents')
 TMP_FOLDER = AGENTS_FOLDER / 'templates'
 LOL_FOLDER = AGENTS_FOLDER / 'LOL'
 
-TMPL = Environment(loader=FileSystemLoader(str(TMP_FOLDER))).get_template('template.cpp')
+TMPL = Environment(
+    loader=FileSystemLoader(str(TMP_FOLDER))).get_template('template.cpp')
 
 AGENT_SRC = LOL_FOLDER / 'agent.cpp'
 AGENT_BIN = LOL_FOLDER / 'agent'
@@ -32,9 +33,8 @@ GP_OPERAND = [
     'ownTotalAttack',
     'enemyAttack',
     'enemyDefence',
-    'enemyAbilities'
+    'enemyAbilities',
 ]
-
 
 REFEREE = './referee/Tester'
 # BASELINE = str(LOL_FOLDER / 'baseline')
@@ -44,7 +44,7 @@ AGENT = f'./{AGENT_BIN}'
 GAMES = 10
 
 
-def referee(game_count = GAMES):
+def referee(game_count):
     os.system(f'g++ -std=c++17 -O3 {AGENT_SRC} -o {AGENT_BIN}')
     ret = subprocess.check_output([
         f'{REFEREE}',
@@ -61,11 +61,18 @@ def gene2expr(gene):
     return gene
 
 
-def fitness(genes, game_count):
+def test(expression, game_count=GAMES):
+    return fitness([expression.encode()], game_count, True)
+
+
+def fitness(genes, game_count=GAMES, extra_info=False):
     exprs = [gene2expr(gene.decode()) for gene in genes]
     TMPL.stream(exprs=exprs).dump(str(AGENT_SRC))
 
     result = referee(game_count)
+    if extra_info:
+        for line in result:
+            print(' '.join(f'{n: >3}' for n in line.split()))
 
     baseline_hps = [*map(int, result[0].split())]
     agent_hps = [*map(int, result[1].split())]
@@ -73,5 +80,6 @@ def fitness(genes, game_count):
     if not agent_hps:
         return -999
 
-    avg_hp_diff = sum(a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
+    avg_hp_diff = sum(
+        a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
     return avg_hp_diff
