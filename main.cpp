@@ -342,6 +342,8 @@ bool compare(DNA *a, DNA *b)
 		return true;
 	else if (isinf(v2))
 		return false;
+	else if (v1==v2)
+		return a->trees[0]->offspring_count < a->trees[0]->offspring_count;
 	else
 		return v1 > v2;
 }
