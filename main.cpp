@@ -6,30 +6,76 @@
 #include <time.h>	/* 時間相關函數 */
 #include <string>
 #include <fstream>
+#include <sstream>
+#include <unordered_map>
 #include "fitness.h"
 
 using namespace std;
 
-const int VALUE_MAX = 100;
-const int VALUE_MIN = -100;
-const int CHANGE_WEIGHT = 10;
-const int REPLACE_WEIGHT = 10;
-const double X_CHANCE = 0.5;
-const int DNA_COUNT = 20;
-const int LEFT_AMOUNT = 10;
-const double MUTATION_CHANCE = 0.5;
-const int GENERATION_COUNT = 10;
+double rand_double()
+{
+	return (double)rand() / RAND_MAX;
+}
+
+unordered_map<string, string> config;
+
+template <typename T>
+T get_config(string key)
+{
+	if (config.empty())
+	{
+		fstream file;
+		file.open("config", ios::in);
+		if (!file)
+		{
+			cout << "config not exist!" << endl;
+			exit(0);
+		}
+
+		string line;
+		while (getline(file, line))
+		{
+			istringstream is_line(line);
+			string key;
+			if (getline(is_line, key, '='))
+			{
+				string value;
+				if (getline(is_line, value))
+					config.insert({key, value});
+			}
+		}
+	}
+	if (config.count(key) == 0)
+	{
+		cout << "key " << key << " not exist!" << endl;
+		exit(0);
+	}
+	if (is_same_v<T, int>)
+		return stoi(config[key]);
+	if (is_same_v<T, double>)
+		return stod(config[key]);
+}
+
+const int VALUE_MAX = get_config<int>("VALUE_MAX");
+const int VALUE_MIN = get_config<int>("VALUE_MIN");
+const int CHANGE_CHANCE = get_config<double>("CHANGE_CHANCE");
+const double X_CHANCE = get_config<double>("X_CHANCE");
+const int DNA_COUNT = get_config<int>("DNA_COUNT");
+const int LEFT_AMOUNT = get_config<int>("LEFT_AMOUNT");
+const double MUTATION_CHANCE = get_config<double>("MUTATION_CHANCE");
+const int GENERATION_COUNT = get_config<int>("GENERATION_COUNT");
+const int GAME_COUNT_CAP = get_config<int>("GAME_COUNT_CAP");
+const int GAME_COUNT_C1 = get_config<int>("GAME_COUNT_C1");
+const int GAME_COUNT_C2 = get_config<int>("GAME_COUNT_C2");
+const int GAME_COUNT_C3 = get_config<int>("GAME_COUNT_C3");
+const int REFRESH_INTERVAL = get_config<int>("REFRESH_INTERVAL");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
 	{1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18},
 };
-
-double rand_double()
-{
-	return (double)rand() / RAND_MAX;
-}
+int generation;
 
 class Node
 {
@@ -44,15 +90,15 @@ public:
 	int offspring_count = 0;
 	int tree_index;
 
-	Node(int index, Node *p, double child_chance = 0.5) : parent(p), tree_index(index)
+	Node(int index, Node *p, int level = 0) : parent(p), tree_index(index)
 	{
-		if (rand_double() < child_chance)
+		if (level < 3)
 		{
 			child_length = rand_double() < 0.5 ? 1 : 2;
 			change();
 			for (int i = 0; i < child_length; i++)
 			{
-				childs[i] = new Node(tree_index, this, child_chance - 0.2);
+				childs[i] = new Node(tree_index, this, level + 1);
 				offspring_count += 1 + childs[i]->offspring_count;
 			}
 		}
@@ -160,19 +206,28 @@ public:
 	string to_string()
 	{
 		if (child_length == 2)
-			return '(' + childs[0]->to_string() + operate + ' ' + childs[1]->to_string() + ')';
+		{
+			string child1_string = childs[1]->to_string();
+			// avoid (1) - (-2) turns into (1--2)
+			return '(' + childs[0]->to_string() + operate + (operate == child1_string[0] ? " " : "") + child1_string + ')';
+		}
 		else if (child_length == 1)
+		{
+			string child0_string = childs[0]->to_string();
+			if (child0_string[0] != '(')
+				child0_string = '(' + child0_string + ')';
 			switch (operate)
 			{
 			case 's':
-				return "p2(" + childs[0]->to_string() + ")";
+				return "p2" + child0_string;
 			case 'r':
-				return "sqrt(" + childs[0]->to_string() + ")";
+				return "sqrt" + child0_string;
 			case 'l':
-				return "log(" + childs[0]->to_string() + ")";
+				return "log" + child0_string;
 			case 'e':
-				return "exp(" + childs[0]->to_string() + ")";
+				return "exp" + child0_string;
 			}
+		}
 		return is_variable ? "{" + std::to_string(variable_index) + "}" : std::to_string(value);
 	}
 
@@ -193,6 +248,7 @@ class DNA
 public:
 	Node *trees[TREE_COUNT];
 	double score = -1;
+	int last_generation = -99999;
 
 	DNA(DNA *dna = NULL, DNA *cross = NULL)
 	{
@@ -220,8 +276,7 @@ public:
 		{
 			Node *change = ret->trees[i]->random_child(true);
 
-			int random = rand() % (CHANGE_WEIGHT + REPLACE_WEIGHT);
-			if (random < CHANGE_WEIGHT || change == ret->trees[i])
+			if (rand_double() < CHANGE_CHANCE || change == ret->trees[i])
 				change->change();
 			else
 			{
@@ -250,12 +305,15 @@ public:
 
 	double fitness()
 	{
-		if (score != -1)
+		int need_game_count = min(GAME_COUNT_CAP, GAME_COUNT_C1 * generation * generation + GAME_COUNT_C2 * generation + GAME_COUNT_C3);
+		if (generation - last_generation < REFRESH_INTERVAL)
 			return score;
+
 		vector<string> genes;
 		for (int i = 0; i < TREE_COUNT; i++)
 			genes.push_back(trees[i]->to_string());
-		score = ::fitness(genes);
+		score = ::fitness(genes, need_game_count);
+		last_generation = generation;
 		cout << '.' << flush;
 		return score;
 	}
@@ -305,25 +363,34 @@ int main(int argc, char *argv[])
 	for (int i = 0; i < LEFT_AMOUNT; i++)
 		DNAs[i] = new DNA();
 
-	for (int i = 0; i < GENERATION_COUNT; i++)
+	for (generation = 0; generation < GENERATION_COUNT; generation++)
 	{
+		file << "\nSpawning" << endl;
 		for (int j = LEFT_AMOUNT; j < DNA_COUNT; j++)
 		{
 			if ((double)rand() / RAND_MAX < MUTATION_CHANCE)
+			{
 				DNAs[j] = DNAs[j % LEFT_AMOUNT]->mutation();
+				file << DNAs[j % LEFT_AMOUNT]->trees[0]->to_string() << " 變異出 " << DNAs[j]->trees[0]->to_string() << endl;
+			}
 			else
-				DNAs[j] = DNAs[j % LEFT_AMOUNT]->cross(DNAs[rand() % LEFT_AMOUNT]);
+			{
+				int cross_index = rand() % LEFT_AMOUNT;
+				DNAs[j] = DNAs[j % LEFT_AMOUNT]->cross(DNAs[cross_index]);
+				file << DNAs[j % LEFT_AMOUNT]->trees[0]->to_string() << " 和 " << DNAs[cross_index]->trees[0]->to_string() << " 交配出 "
+					 << DNAs[j]->trees[0]->to_string() << endl;
+			}
 		}
 		sort(DNAs, DNAs + DNA_COUNT, compare);
 		for (int j = LEFT_AMOUNT; j < DNA_COUNT; j++)
 			DNAs[j]->destory();
 
-		cout << "\nGeneration " << i << endl;
+		cout << "\nGeneration " << generation << endl;
 		cout << DNAs[0]->trees[0]->to_string() << endl;
 		cout << DNAs[0]->fitness() << endl;
 		if (file)
 		{
-			file << "Generation " << i << endl
+			file << "\nGeneration " << generation << endl
 				 << "Fitness: ";
 			for (int j = 0; j < LEFT_AMOUNT; j++)
 				file << DNAs[j]->fitness() << " ";
@@ -332,7 +399,7 @@ int main(int argc, char *argv[])
 				file << DNAs[j]->trees[0]->to_string() << endl;
 		}
 
-		if (DNAs[0]->fitness() >= 1)
+		if (DNAs[0]->fitness() >= 30)
 			break;
 	}
 	if (file)

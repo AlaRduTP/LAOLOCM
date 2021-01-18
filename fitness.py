@@ -44,13 +44,13 @@ AGENT = f'./{AGENT_BIN}'
 GAMES = 10
 
 
-def referee():
+def referee(game_count = GAMES):
     os.system(f'g++ -std=c++17 -O3 {AGENT_SRC} -o {AGENT_BIN}')
     ret = subprocess.check_output([
         f'{REFEREE}',
         f'--baseline="{BASELINE}"',
         f'--agent="{AGENT}"',
-        f'--games={GAMES}',
+        f'--games={game_count}',
     ]).decode('utf8').split('\n')
     return ret
 
@@ -61,11 +61,11 @@ def gene2expr(gene):
     return gene
 
 
-def fitness(genes):
+def fitness(genes, game_count):
     exprs = [gene2expr(gene.decode()) for gene in genes]
     TMPL.stream(exprs=exprs).dump(str(AGENT_SRC))
 
-    result = referee()
+    result = referee(game_count)
 
     baseline_hps = [*map(int, result[0].split())]
     agent_hps = [*map(int, result[1].split())]
