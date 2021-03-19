@@ -106,6 +106,9 @@ int main()
 
         std::cin >> playerHealth >> playerMana >> playerDeck >> playerRune >> playerDraw;
         std::cin >> opponentHealth >> opponentMana >> opponentDeck >> opponentRune >> opponentDraw;
+        
+        CreatureCard player(-1, -1, MY_SIDE, CREATURE, 0, 0, playerHealth, "", 0, 0, 0, -1);
+        CreatureCard opponent(-1, -1, OPPONENT_SIDE, CREATURE, 0, 0, opponentHealth, "", 0, 0, 0, -1);
 
         int opponentHand;
         int opponentActions;
@@ -203,37 +206,37 @@ int main()
             // Now with simple greedy strategy
             if (board[2].size() == 0)
             {
-                for (const auto &creature : board[0])
+                for (CreatureCard &creature : board[0])
                 {
-                    actions += "ATTACK " + std::to_string(creature.instanceID) + " -1;";
+                    creature.attackTo(action, opponent);
                 }
             }
             else
             {
-                for (const auto &creature : board[0])
+                for (CreatureCard &creature : board[0])
                 {
-                    actions += "ATTACK " + std::to_string(creature.instanceID) + " " + std::to_string(board[2][0].instanceID) + ";";
+                    creature.attackTo(action, board[2][0]);
                 }
             }
             if (board[3].size() == 0)
             {
-                for (const auto &creature : board[1])
+                for (CreatureCard &creature : board[1])
                 {
-                    actions += "ATTACK " + std::to_string(creature.instanceID) + " -1;";
+                    creature.attackTo(action, opponent);
                 }
             }
             else
             {
-                for (const auto &creature : board[1])
+                for (CreatureCard &creature : board[1])
                 {
-                    actions += "ATTACK " + std::to_string(creature.instanceID) + " " + std::to_string(board[3][0].instanceID) + ";";
+                    creature.attackTo(action, board[3][0]);
                 }
             }
             // do actions
             if (actions.size())
-                cout << actions << endl;
+                std::cout << actions << std::endl;
             else
-                cout << "PASS" << endl;
+                std::cout << "PASS" << std::endl;
         }
     }
     return 0;
