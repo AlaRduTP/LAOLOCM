@@ -95,9 +95,10 @@ int main()
     i.use(action, d.instanceID());
 
     std::cout << action << std::endl;
-    while(1)
+    while (1)
     {
         std::vector<CreatureCard> creatureCardOptions;
+        std::vector<CreatureCard> itemCardOptions;
         std::vector<CreatureCard> board[4]; // myLeft myRight opponentLeft opponentRight
         int enemyLeftTotalHP = 0, enemyLeftTotalAttack = 0, enemyRightTotalHP = 0, enemyRightTotalAttack = 0, ownLeftTotalHP = 0, ownLeftTotalAttack = 0, ownRightTotalHP = 0, ownRightTotalAttack = 0;
         // game information
@@ -106,7 +107,7 @@ int main()
 
         std::cin >> playerHealth >> playerMana >> playerDeck >> playerRune >> playerDraw;
         std::cin >> opponentHealth >> opponentMana >> opponentDeck >> opponentRune >> opponentDraw;
-        
+
         CreatureCard player(-1, -1, MY_SIDE, CREATURE, 0, 0, playerHealth, "", 0, 0, 0, -1);
         CreatureCard opponent(-1, -1, OPPONENT_SIDE, CREATURE, 0, 0, opponentHealth, "", 0, 0, 0, -1);
 
@@ -131,10 +132,18 @@ int main()
             std::cin >> cardNumber >> instanceID >> location >> cardType >> cost >> attack >> defense >> abilities >> myHealthChange >> opponentHealthChange >> cardDraw >> lane;
             std::cin.ignore();
 
-            if (location == IN_HAND && cardType == CREATURE)
+            if (location == IN_HAND)
             { // in my hand
-                CreatureCard summonLeft(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
-                creatureCardOptions.push_back(summonLeft);
+                if (cardType == CREATURE)
+                {
+                    CreatureCard summon(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
+                    creatureCardOptions.push_back(summon);
+                }
+                else
+                {
+                    CreatureCard item(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
+                    itemCardOptions.push_back(item);
+                }
             }
             else if (location == OPPONENT_SIDE)
             { // in opponent side of board
