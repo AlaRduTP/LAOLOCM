@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
+
 
 enum CardType
 {
@@ -44,18 +46,23 @@ public:
     std::string abilities() const { return abilities_; };
     void atkDiff(int atk) { attack_ += atk; };
     void defDiff(int def) { defense_ += def; };
+    bool operator<(const Card &rhs) const { return score_ < rhs.score_;};
+    bool operator==(const Card &rhs) const { return score_ == rhs.score_;};
 
 private:
     int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
     int myhealthChange_, opponentHealthChange_, cardDraw_, lane_;
+    double score_  = -1;
     std::string abilities_;
+    friend class CreatureCard;
+    friend class ItemCard;
 };
 
 class CreatureCard : public Card
 {
 public:
     CreatureCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane){};
-    void summon(std::string &action, int lane)
+    void summon(std::string &action, int lane) const
     {
         action += "SUMMON " + std::to_string(instanceID()) + " " + std::to_string(lane) + ";";
     };
@@ -66,6 +73,10 @@ public:
         this->defDiff(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
+    void calculate(int enemyLeftTotalHP, int ownLeftTotalHP, int enemyLeftTotalAttack, int ownLeftTotalAttack)
+    {
+        score_ = 1;
+    }
 
 private:
 };
@@ -79,23 +90,29 @@ public:
         action += "USE " + std::to_string(instanceID()) + " " + std::to_string(target) + ";";
     };
 
+    void calculate()
+    {
+        score_ = 1;
+    }
+
 private:
 };
 
 int main()
 {
-    std::string action;
-    CreatureCard c(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1), d(1, 2, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1);
-    c.summon(action, 0);
-    d.summon(action, 1);
-    std::cout << c.canKill(d) << std::endl;
-    c.attackTo(action, d);
+//    std::string action;
+//    CreatureCard c(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1), d(1, 2, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1);
+//    c.summon(action, 0);
+//    d.summon(action, 1);
+//    std::cout << c.canKill(d) << std::endl;
+//    c.attackTo(action, d);
 
-    ItemCard i(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 0);
-    i.use(action, d.instanceID());
+//    ItemCard i(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 0);
+//    i.use(action, d.instanceID());
 
-    std::cout << action << std::endl;
-    while (1)
+//    std::cout << action << std::endl;
+//    std::cout << (i == d)<< std::endl;
+    while(1)
     {
         std::vector<CreatureCard> creatureCardOptions;
         std::vector<CreatureCard> itemCardOptions;
@@ -147,7 +164,7 @@ int main()
             }
             else if (location == OPPONENT_SIDE)
             { // in opponent side of board
-                CreatureCard tmp(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
+                CreatureCard tmp(cardNumber, instanceID, OPPONENT_SIDE, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
                 if (lane == LEFT)
                 {
                     board[OPPONENTLEFT].push_back(tmp);
@@ -192,20 +209,20 @@ int main()
             // Summon
             for (auto &option : creatureCardOptions)
             {
-                if (option.getLane() == 0)
+                if (option.lane() == 0)
                 { // Left
-                    option.creatureCalulateScore(enemyLeftTotalHP, ownLeftTotalHP, enemyLeftTotalAttack, ownLeftTotalAttack);
+                    option.calculate(enemyLeftTotalHP, ownLeftTotalHP, enemyLeftTotalAttack, ownLeftTotalAttack);
                 }
-                else if (option.getLane() == 1)
+                else if (option.lane() == 1)
                 { // Right
-                    option.creatureCalulateScore(enemyRightTotalHP, ownRightTotalHP, enemyRightTotalAttack, ownRightTotalAttack);
+                    option.calculate(enemyRightTotalHP, ownRightTotalHP, enemyRightTotalAttack, ownRightTotalAttack);
                 }
             }
 
-            sort(creatureCardOptions.begin(), creatureCardOptions.end());
+            std::sort(creatureCardOptions.begin(), creatureCardOptions.end());
             for (const auto &option : creatureCardOptions)
             {
-                option.creatureTake(actions);
+                option.summon(actions, option.lane());
             }
 
             // Use Item
@@ -217,28 +234,28 @@ int main()
             {
                 for (CreatureCard &creature : board[0])
                 {
-                    creature.attackTo(action, opponent);
+                    creature.attackTo(actions, opponent);
                 }
             }
             else
             {
                 for (CreatureCard &creature : board[0])
                 {
-                    creature.attackTo(action, board[2][0]);
+                    creature.attackTo(actions, board[2][0]);
                 }
             }
             if (board[3].size() == 0)
             {
                 for (CreatureCard &creature : board[1])
                 {
-                    creature.attackTo(action, opponent);
+                    creature.attackTo(actions, opponent);
                 }
             }
             else
             {
                 for (CreatureCard &creature : board[1])
                 {
-                    creature.attackTo(action, board[3][0]);
+                    creature.attackTo(actions, board[3][0]);
                 }
             }
             // do actions
