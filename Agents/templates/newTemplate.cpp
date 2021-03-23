@@ -111,9 +111,10 @@ public:
         getDamaged(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
-    void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
+    void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack, int playerHP, int enemyHP)
     {
-        score_ = (double)-attack_ / cost_;
+        // score_ = (double)-attack_ / cost_;
+        score_ = {{exprs[0]}};
     }
     void calculateAttackScore(CreatureCard &attacker)
     {
@@ -269,7 +270,7 @@ int main()
             {
                 if (option.cardType() == CREATURE)
                 {
-                    ((CreatureCard *)&option)->calculateUseScore(enemyTotalHP[option.lane()], ownTotalHP[option.lane()], enemyTotalAttack[option.lane()], ownTotalAttack[option.lane()]);
+                    ((CreatureCard *)&option)->calculateUseScore(enemyTotalHP[option.lane()], ownTotalHP[option.lane()], enemyTotalAttack[option.lane()], ownTotalAttack[option.lane()], playerHealth, opponentHealth);
                 }
                 else
                 { // Item

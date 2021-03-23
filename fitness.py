@@ -9,7 +9,7 @@ TMP_FOLDER = AGENTS_FOLDER / 'templates'
 LOL_FOLDER = AGENTS_FOLDER / 'LOL'
 
 TMPL = Environment(
-    loader=FileSystemLoader(str(TMP_FOLDER))).get_template('template.cpp')
+    loader=FileSystemLoader(str(TMP_FOLDER))).get_template('newTemplate.cpp')
 
 AGENT_SRC = LOL_FOLDER / 'agent.cpp'
 AGENT_BIN = LOL_FOLDER / 'agent'
