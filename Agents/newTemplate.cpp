@@ -162,7 +162,7 @@ int main()
     {
         std::vector<Card> cardOptions;
         std::vector<CreatureCard> board[4]; // myLeft myRight opponentLeft opponentRight
-        int enemyLeftTotalHP = 0, enemyLeftTotalAttack = 0, enemyRightTotalHP = 0, enemyRightTotalAttack = 0, ownLeftTotalHP = 0, ownLeftTotalAttack = 0, ownRightTotalHP = 0, ownRightTotalAttack = 0;
+        int enemyTotalHP[2] = {0}, enemyTotalAttack[2] = {0}, ownTotalHP[2] = {0}, ownTotalAttack[2] = {0};
         // game information
         int playerHealth, playerMana, playerDeck, playerRune, playerDraw;
         int opponentHealth, opponentMana, opponentDeck, opponentRune, opponentDraw;
@@ -219,34 +219,16 @@ int main()
                 else if (location == OPPONENT_SIDE)
                 { // in opponent side of board
                     CreatureCard tmp(cardNumber, instanceID, OPPONENT_SIDE, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
-                    if (lane == LEFT)
-                    {
-                        board[OPPONENTLEFT].push_back(tmp);
-                        enemyLeftTotalAttack += attack;
-                        enemyLeftTotalHP += defense;
-                    }
-                    else
-                    {
-                        board[OPPONENTRIGHT].push_back(tmp);
-                        enemyRightTotalAttack += attack;
-                        enemyRightTotalHP += defense;
-                    }
+                    board[2 + lane].push_back(tmp);
+                    enemyTotalAttack[lane] += attack;
+                    enemyTotalHP[lane] += defense;
                 }
                 else if (location == MY_SIDE)
                 { // in my side of board
                     CreatureCard tmp(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
-                    if (lane == LEFT)
-                    {
-                        board[MYLEFT].push_back(tmp);
-                        ownLeftTotalAttack += attack;
-                        ownLeftTotalHP += defense;
-                    }
-                    else
-                    {
-                        board[MYRIGHT].push_back(tmp);
-                        ownRightTotalAttack += attack;
-                        ownRightTotalHP += defense;
-                    }
+                    board[lane].push_back(tmp);
+                    ownTotalAttack[lane] += attack;
+                    ownTotalHP[lane] += defense;
                 }
             }
         }
@@ -271,13 +253,9 @@ int main()
             // Summon
             for (auto &option : cardOptions)
             {
-                if (option.lane() == LEFT)
-                { // Left
-                    ((CreatureCard *)&option)->calculateUseScore(enemyLeftTotalHP, ownLeftTotalHP, enemyLeftTotalAttack, ownLeftTotalAttack);
-                }
-                else if (option.lane() == RIGHT)
-                { // Right
-                    ((CreatureCard *)&option)->calculateUseScore(enemyRightTotalHP, ownRightTotalHP, enemyRightTotalAttack, ownRightTotalAttack);
+                if (option.cardType() == CREATURE)
+                {
+                    ((CreatureCard *)&option)->calculateUseScore(enemyTotalHP[option.lane()], ownTotalHP[option.lane()], enemyTotalAttack[option.lane()], ownTotalAttack[option.lane()]);
                 }
                 else
                 { // Item
@@ -303,12 +281,14 @@ int main()
                     else if (board[1].size() > 0)
                         ((ItemCard *)&option)->use(actions, board[1][0]);
                     break;
+
                 case REDITEM:
                     if (board[2].size() > 0)
                         ((ItemCard *)&option)->use(actions, board[2][0]);
                     else if (board[3].size() > 0)
                         ((ItemCard *)&option)->use(actions, board[3][0]);
                     break;
+
                 case BLUEITEM:
                     ((ItemCard *)&option)->use(actions, opponent);
                     break;
@@ -320,15 +300,16 @@ int main()
             {
                 for (CreatureCard &creature : board[i])
                 {
-                    for (CreatureCard &enemy : board[2 + i])
+                    auto &targets = board[2 + i];
+                    for (CreatureCard &enemy : targets)
                     {
                         enemy.calculateAttackScore(creature);
                     }
-                    std::sort(board[2 + i].begin(), board[2 + i].end());
-                    std::reverse(board[2 + i].begin(), board[2 + i].end());
-                    creature.attackTo(actions, board[2 + i][board[2 + i].size() - 1]);
-                    if (board[2 + i][board[2 + i].size() - 1].defense() <= 0)
-                        board[2 + i].pop_back();
+                    std::sort(targets.begin(), targets.end());
+                    std::reverse(targets.begin(), targets.end());
+                    creature.attackTo(actions, targets[targets.size() - 1]);
+                    if (targets[targets.size() - 1].defense() <= 0)
+                        targets.pop_back();
                 }
             }
         }
