@@ -77,8 +77,9 @@ def fitness(genes, game_count=GAMES, extra_info=False):
     baseline_hps = [*map(int, result[0].split())]
     agent_hps = [*map(int, result[1].split())]
 
-    if not agent_hps:
-        return -999
+    to_fill = game_count - len(baseline_hps)
+    baseline_hps += [30] * to_fill
+    agent_hps += [0] * to_fill
 
     avg_hp_diff = sum(
         a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
