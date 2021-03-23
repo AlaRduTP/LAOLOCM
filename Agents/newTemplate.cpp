@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#include <cmath>
 
 enum CardType
 {
@@ -22,7 +22,8 @@ enum Location
 enum Lane
 {
     LEFT,
-    RIGHT
+    RIGHT,
+    NOT_IN = -1
 };
 
 enum BoardNumber
@@ -33,10 +34,15 @@ enum BoardNumber
     OPPONENTRIGHT
 };
 
+double p2(double a)
+{
+    return a * a;
+}
+
 class Card
 {
 public:
-    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), abilities_(abilities), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane){};
+    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), abilities_(abilities), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), _index(index){};
     int instanceID() const { return instanceId_; };
     int location() const { return location_; };
     int cost() const { return cost_; };
@@ -46,13 +52,21 @@ public:
     std::string abilities() const { return abilities_; };
     void atkDiff(int atk) { attack_ += atk; };
     void defDiff(int def) { defense_ += def; };
-    bool operator<(const Card &rhs) const { return score_ < rhs.score_;};
-    bool operator==(const Card &rhs) const { return score_ == rhs.score_;};
+    bool operator<(const Card &rhs) const { return score_ < rhs.score_; };
+    bool operator==(const Card &rhs) const { return score_ == rhs.score_; };
+    void calculateGetScore()
+    {
+        score_ = 1;
+    }
+    void pick(std::string &action) const
+    {
+        action += "PICK " + std::to_string(_index) + ";";
+    };
 
 private:
     int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
-    int myhealthChange_, opponentHealthChange_, cardDraw_, lane_;
-    double score_  = -1;
+    int myhealthChange_, opponentHealthChange_, cardDraw_, lane_, _index;
+    double score_ = -1;
     std::string abilities_;
     friend class CreatureCard;
     friend class ItemCard;
@@ -61,7 +75,7 @@ private:
 class CreatureCard : public Card
 {
 public:
-    CreatureCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane){};
+    CreatureCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane, index){};
     void summon(std::string &action, int lane) const
     {
         action += "SUMMON " + std::to_string(instanceID()) + " " + std::to_string(lane) + ";";
@@ -73,9 +87,9 @@ public:
         this->defDiff(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
-    void calculate(int enemyLeftTotalHP, int ownLeftTotalHP, int enemyLeftTotalAttack, int ownLeftTotalAttack)
+    void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
     {
-        score_ = 1;
+        score_ = (((((defense_ - cost_) - exp(abilities_[4])) + p2(exp(cardDraw_ + enemyTotalAttack) / cost_)) + ((cardDraw_ - cost_) - 16)) + p2(exp(exp(p2(abilities_[4])) / sqrt((attack_ * enemyTotalAttack) - log((3 * attack_) - log(p2(attack_))))) / enemyTotalAttack));
     }
 
 private:
@@ -84,13 +98,13 @@ private:
 class ItemCard : public Card
 {
 public:
-    ItemCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane){};
+    ItemCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane, index){};
     void use(std::string &action, int target)
     {
         action += "USE " + std::to_string(instanceID()) + " " + std::to_string(target) + ";";
     };
 
-    void calculate()
+    void calculateUseScore()
     {
         score_ = 1;
     }
@@ -100,22 +114,21 @@ private:
 
 int main()
 {
-//    std::string action;
-//    CreatureCard c(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1), d(1, 2, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1);
-//    c.summon(action, 0);
-//    d.summon(action, 1);
-//    std::cout << c.canKill(d) << std::endl;
-//    c.attackTo(action, d);
+    //    std::string action;
+    //    CreatureCard c(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1), d(1, 2, 1, 1, 1, 1, 1, "G", 1, 1, 1, 1);
+    //    c.summon(action, 0);
+    //    d.summon(action, 1);
+    //    std::cout << c.canKill(d) << std::endl;
+    //    c.attackTo(action, d);
 
-//    ItemCard i(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 0);
-//    i.use(action, d.instanceID());
+    //    ItemCard i(1, 1, 1, 1, 1, 1, 1, "G", 1, 1, 1, 0);
+    //    i.use(action, d.instanceID());
 
-//    std::cout << action << std::endl;
-//    std::cout << (i == d)<< std::endl;
-    while(1)
+    //    std::cout << action << std::endl;
+    //    std::cout << (i == d)<< std::endl;
+    while (1)
     {
-        std::vector<CreatureCard> creatureCardOptions;
-        std::vector<CreatureCard> itemCardOptions;
+        std::vector<Card> cardOptions;
         std::vector<CreatureCard> board[4]; // myLeft myRight opponentLeft opponentRight
         int enemyLeftTotalHP = 0, enemyLeftTotalAttack = 0, enemyRightTotalHP = 0, enemyRightTotalAttack = 0, ownLeftTotalHP = 0, ownLeftTotalAttack = 0, ownRightTotalHP = 0, ownRightTotalAttack = 0;
         // game information
@@ -125,8 +138,8 @@ int main()
         std::cin >> playerHealth >> playerMana >> playerDeck >> playerRune >> playerDraw;
         std::cin >> opponentHealth >> opponentMana >> opponentDeck >> opponentRune >> opponentDraw;
 
-        CreatureCard player(-1, -1, MY_SIDE, CREATURE, 0, 0, playerHealth, "", 0, 0, 0, -1);
-        CreatureCard opponent(-1, -1, OPPONENT_SIDE, CREATURE, 0, 0, opponentHealth, "", 0, 0, 0, -1);
+        CreatureCard player(-1, -1, MY_SIDE, CREATURE, 0, 0, playerHealth, "", 0, 0, 0, -1, -1);
+        CreatureCard opponent(-1, -1, OPPONENT_SIDE, CREATURE, 0, 0, opponentHealth, "", 0, 0, 0, -1, -1);
 
         int opponentHand;
         int opponentActions;
@@ -153,18 +166,20 @@ int main()
             { // in my hand
                 if (cardType == CREATURE)
                 {
-                    CreatureCard summon(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
-                    creatureCardOptions.push_back(summon);
+                    CreatureCard summonLeft(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, LEFT, i);
+                    cardOptions.push_back(summonLeft);
+                    CreatureCard summonRight(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, RIGHT, i);
+                    cardOptions.push_back(summonRight);
                 }
                 else
                 {
-                    CreatureCard item(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
-                    itemCardOptions.push_back(item);
+                    ItemCard item(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
+                    cardOptions.push_back(item);
                 }
             }
             else if (location == OPPONENT_SIDE)
             { // in opponent side of board
-                CreatureCard tmp(cardNumber, instanceID, OPPONENT_SIDE, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
+                CreatureCard tmp(cardNumber, instanceID, OPPONENT_SIDE, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
                 if (lane == LEFT)
                 {
                     board[OPPONENTLEFT].push_back(tmp);
@@ -180,7 +195,7 @@ int main()
             }
             else if (location == MY_SIDE)
             { // in my side of board
-                CreatureCard tmp(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane);
+                CreatureCard tmp(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
                 if (lane == LEFT)
                 {
                     board[MYLEFT].push_back(tmp);
@@ -196,33 +211,48 @@ int main()
             }
         }
 
+        std::string actions;
+
         // Draw Phase
         if (playerMana == 0)
         {
-            std::cout << "PASS" << std::endl;
-            // TODO Not Random Draw
+            for (auto &option : cardOptions)
+            {
+                option.calculateGetScore();
+            }
+            std::sort(cardOptions.begin(), cardOptions.end());
+            for (const auto &option : cardOptions)
+            {
+                option.pick(actions);
+            }
         }
         // Battle Phase
         else
         {
-            std::string actions;
             // Summon
-            for (auto &option : creatureCardOptions)
+            for (auto &option : cardOptions)
             {
-                if (option.lane() == 0)
+                if (option.lane() == LEFT)
                 { // Left
-                    option.calculate(enemyLeftTotalHP, ownLeftTotalHP, enemyLeftTotalAttack, ownLeftTotalAttack);
+                    ((CreatureCard *)&option)->calculateUseScore(enemyLeftTotalHP, ownLeftTotalHP, enemyLeftTotalAttack, ownLeftTotalAttack);
                 }
-                else if (option.lane() == 1)
+                else if (option.lane() == RIGHT)
                 { // Right
-                    option.calculate(enemyRightTotalHP, ownRightTotalHP, enemyRightTotalAttack, ownRightTotalAttack);
+                    ((CreatureCard *)&option)->calculateUseScore(enemyRightTotalHP, ownRightTotalHP, enemyRightTotalAttack, ownRightTotalAttack);
+                }
+                else
+                { // Item
+                    ((ItemCard *)&option)->calculateUseScore();
                 }
             }
 
-            std::sort(creatureCardOptions.begin(), creatureCardOptions.end());
-            for (const auto &option : creatureCardOptions)
+            std::sort(cardOptions.begin(), cardOptions.end());
+            for (const auto &option : cardOptions)
             {
-                option.summon(actions, option.lane());
+                if (option.lane() != NOT_IN)
+                    ((CreatureCard *)&option)->summon(actions, option.lane());
+                else
+                    ((ItemCard *)&option)->use(actions, -1);
             }
 
             // Use Item
@@ -258,12 +288,12 @@ int main()
                     creature.attackTo(actions, board[3][0]);
                 }
             }
-            // do actions
-            if (actions.size())
-                std::cout << actions << std::endl;
-            else
-                std::cout << "PASS" << std::endl;
         }
+        // do actions
+        if (actions.size())
+            std::cout << actions << std::endl;
+        else
+            std::cout << "PASS" << std::endl;
     }
     return 0;
 }
