@@ -54,6 +54,7 @@ public:
     };
     int instanceID() const { return instanceId_; };
     int location() const { return location_; };
+    int cardType() const { return cardType_; };
     int cost() const { return cost_; };
     int attack() const { return attack_; };
     int defense() const { return defense_; };
@@ -130,9 +131,9 @@ class ItemCard : public Card
 {
 public:
     ItemCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane, index){};
-    void use(std::string &action, int target)
+    void use(std::string &action, CreatureCard &target)
     {
-        action += "USE " + std::to_string(instanceID()) + " " + std::to_string(target) + ";";
+        action += "USE " + std::to_string(instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
 
     void calculateUseScore()
@@ -287,17 +288,34 @@ int main()
             std::sort(cardOptions.begin(), cardOptions.end());
             for (const auto &option : cardOptions)
             {
-                if (option.lane() != NOT_IN)
+                switch (option.cardType())
+                {
+                case CREATURE:
                     ((CreatureCard *)&option)->summon(actions, option.lane());
-                else
-                    ((ItemCard *)&option)->use(actions, -1);
+                    if (option.ability(1)) //charge
+                        board[option.lane()].push_back(*(CreatureCard *)&option);
+                    break;
+
+                // TODO better strategy
+                case GREENITEM:
+                    if (board[0].size() > 0)
+                        ((ItemCard *)&option)->use(actions, board[0][0]);
+                    else if (board[1].size() > 0)
+                        ((ItemCard *)&option)->use(actions, board[1][0]);
+                    break;
+                case REDITEM:
+                    if (board[2].size() > 0)
+                        ((ItemCard *)&option)->use(actions, board[2][0]);
+                    else if (board[3].size() > 0)
+                        ((ItemCard *)&option)->use(actions, board[3][0]);
+                    break;
+                case BLUEITEM:
+                    ((ItemCard *)&option)->use(actions, opponent);
+                    break;
+                }
             }
 
-            // Use Item
-            // TODO
-
             // Attack
-            // Now with simple greedy strategy
             for (int i = 0; i < 2; i++)
             {
                 for (CreatureCard &creature : board[i])
