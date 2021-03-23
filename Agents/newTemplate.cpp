@@ -42,32 +42,48 @@ double p2(double a)
 class Card
 {
 public:
-    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), abilities_(abilities), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), _index(index){};
+    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), _index(index)
+    {
+        for (int i = 0; i < 7; ++i)
+        { // the last ability "P" indicates thet if it is the player himself
+            if (i < abilities.length() && abilities[i] != '-')
+                abilities_[i] = 1;
+            else
+                abilities_[i] = 0;
+        }
+    };
     int instanceID() const { return instanceId_; };
     int location() const { return location_; };
     int cost() const { return cost_; };
     int attack() const { return attack_; };
     int defense() const { return defense_; };
     int lane() const { return lane_; };
-    std::string abilities() const { return abilities_; };
+    int ability(int index) const { return abilities_[index]; };
     void atkDiff(int atk) { attack_ += atk; };
     void defDiff(int def) { defense_ += def; };
     bool operator<(const Card &rhs) const { return score_ < rhs.score_; };
     bool operator==(const Card &rhs) const { return score_ == rhs.score_; };
     void calculateGetScore()
     {
-        score_ = 1;
+        score_ = (double)-attack_ / cost_;
     }
     void pick(std::string &action) const
     {
-        action += "PICK " + std::to_string(_index) + ";";
-    };
+        action += "PICK " + std::to_string(_index);
+    }
+    void getDamaged(int amount)
+    {
+        if (abilities_[5])
+            abilities_[5] = 0;
+        else
+            defDiff(abilities_[4] ? -999 : -amount);
+    }
 
 private:
     int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
     int myhealthChange_, opponentHealthChange_, cardDraw_, lane_, _index;
+    int abilities_[7]; // BCDGLWP
     double score_ = -1;
-    std::string abilities_;
     friend class CreatureCard;
     friend class ItemCard;
 };
@@ -83,13 +99,28 @@ public:
     bool canKill(const CreatureCard &c) { return c.defense() <= this->attack(); };
     void attackTo(std::string &action, CreatureCard &target)
     {
-        target.defDiff(this->attack());
-        this->defDiff(target.attack());
+        target.getDamaged(this->attack());
+        getDamaged(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
     void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
     {
-        score_ = (((((defense_ - cost_) - exp(abilities_[4])) + p2(exp(cardDraw_ + enemyTotalAttack) / cost_)) + ((cardDraw_ - cost_) - 16)) + p2(exp(exp(p2(abilities_[4])) / sqrt((attack_ * enemyTotalAttack) - log((3 * attack_) - log(p2(attack_))))) / enemyTotalAttack));
+        score_ = (double)-attack_ / cost_;
+    }
+    void calculateAttackScore(CreatureCard &attacker)
+    {
+        if (abilities_[6]) // if there are no cards with Guard, attack the player first.
+            score_ = -500;
+        else if (attacker.ability(4)) // if it has Lethal, kill the one with the most health
+            score_ = -defense_;
+        else
+        { // if it can kill, kill the one with the most health, if not, attack the one with the least health
+            score_ = attacker.attack() - (abilities_[5] ? 0 : defense_);
+            if (score_ < 0)
+                score_ = defense_;
+        }
+        if (abilities_[3]) // the one with Guard needs to be damaged first
+            score_ -= 1000;
     }
 
 private:
@@ -106,7 +137,7 @@ public:
 
     void calculateUseScore()
     {
-        score_ = 1;
+        score_ = (double)-attack_ / cost_;
     }
 
 private:
@@ -138,8 +169,8 @@ int main()
         std::cin >> playerHealth >> playerMana >> playerDeck >> playerRune >> playerDraw;
         std::cin >> opponentHealth >> opponentMana >> opponentDeck >> opponentRune >> opponentDraw;
 
-        CreatureCard player(-1, -1, MY_SIDE, CREATURE, 0, 0, playerHealth, "", 0, 0, 0, -1, -1);
-        CreatureCard opponent(-1, -1, OPPONENT_SIDE, CREATURE, 0, 0, opponentHealth, "", 0, 0, 0, -1, -1);
+        CreatureCard player(-1, -1, MY_SIDE, CREATURE, 0, 0, playerHealth, "------P", 0, 0, 0, -1, -1);
+        CreatureCard opponent(-1, -1, OPPONENT_SIDE, CREATURE, 0, 0, opponentHealth, "------P", 0, 0, 0, -1, -1);
 
         int opponentHand;
         int opponentActions;
@@ -162,54 +193,64 @@ int main()
             std::cin >> cardNumber >> instanceID >> location >> cardType >> cost >> attack >> defense >> abilities >> myHealthChange >> opponentHealthChange >> cardDraw >> lane;
             std::cin.ignore();
 
-            if (location == IN_HAND)
-            { // in my hand
-                if (cardType == CREATURE)
-                {
-                    CreatureCard summonLeft(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, LEFT, i);
-                    cardOptions.push_back(summonLeft);
-                    CreatureCard summonRight(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, RIGHT, i);
-                    cardOptions.push_back(summonRight);
-                }
-                else
-                {
-                    ItemCard item(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
-                    cardOptions.push_back(item);
-                }
+            if (playerMana == 0)
+            { // Draw Phase
+                Card card(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, NOT_IN, i);
+                cardOptions.push_back(card);
             }
-            else if (location == OPPONENT_SIDE)
-            { // in opponent side of board
-                CreatureCard tmp(cardNumber, instanceID, OPPONENT_SIDE, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
-                if (lane == LEFT)
-                {
-                    board[OPPONENTLEFT].push_back(tmp);
-                    enemyLeftTotalAttack += attack;
-                    enemyLeftTotalHP += defense;
+            else
+            { // Battle Phase
+                if (location == IN_HAND)
+                { // in my hand
+                    if (cardType == CREATURE)
+                    {
+                        CreatureCard summonLeft(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, LEFT, i);
+                        cardOptions.push_back(summonLeft);
+                        CreatureCard summonRight(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, RIGHT, i);
+                        cardOptions.push_back(summonRight);
+                    }
+                    else
+                    {
+                        ItemCard item(cardNumber, instanceID, IN_HAND, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
+                        cardOptions.push_back(item);
+                    }
                 }
-                else
-                {
-                    board[OPPONENTRIGHT].push_back(tmp);
-                    enemyRightTotalAttack += attack;
-                    enemyRightTotalHP += defense;
+                else if (location == OPPONENT_SIDE)
+                { // in opponent side of board
+                    CreatureCard tmp(cardNumber, instanceID, OPPONENT_SIDE, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
+                    if (lane == LEFT)
+                    {
+                        board[OPPONENTLEFT].push_back(tmp);
+                        enemyLeftTotalAttack += attack;
+                        enemyLeftTotalHP += defense;
+                    }
+                    else
+                    {
+                        board[OPPONENTRIGHT].push_back(tmp);
+                        enemyRightTotalAttack += attack;
+                        enemyRightTotalHP += defense;
+                    }
                 }
-            }
-            else if (location == MY_SIDE)
-            { // in my side of board
-                CreatureCard tmp(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
-                if (lane == LEFT)
-                {
-                    board[MYLEFT].push_back(tmp);
-                    ownLeftTotalAttack += attack;
-                    ownLeftTotalHP += defense;
-                }
-                else
-                {
-                    board[MYRIGHT].push_back(tmp);
-                    ownRightTotalAttack += attack;
-                    ownRightTotalHP += defense;
+                else if (location == MY_SIDE)
+                { // in my side of board
+                    CreatureCard tmp(cardNumber, instanceID, IN_HAND, CREATURE, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw, lane, i);
+                    if (lane == LEFT)
+                    {
+                        board[MYLEFT].push_back(tmp);
+                        ownLeftTotalAttack += attack;
+                        ownLeftTotalHP += defense;
+                    }
+                    else
+                    {
+                        board[MYRIGHT].push_back(tmp);
+                        ownRightTotalAttack += attack;
+                        ownRightTotalHP += defense;
+                    }
                 }
             }
         }
+        board[OPPONENTLEFT].push_back(opponent);
+        board[OPPONENTRIGHT].push_back(opponent);
 
         std::string actions;
 
@@ -221,10 +262,7 @@ int main()
                 option.calculateGetScore();
             }
             std::sort(cardOptions.begin(), cardOptions.end());
-            for (const auto &option : cardOptions)
-            {
-                option.pick(actions);
-            }
+            cardOptions[0].pick(actions);
         }
         // Battle Phase
         else
@@ -260,32 +298,19 @@ int main()
 
             // Attack
             // Now with simple greedy strategy
-            if (board[2].size() == 0)
+            for (int i = 0; i < 2; i++)
             {
-                for (CreatureCard &creature : board[0])
+                for (CreatureCard &creature : board[i])
                 {
-                    creature.attackTo(actions, opponent);
-                }
-            }
-            else
-            {
-                for (CreatureCard &creature : board[0])
-                {
-                    creature.attackTo(actions, board[2][0]);
-                }
-            }
-            if (board[3].size() == 0)
-            {
-                for (CreatureCard &creature : board[1])
-                {
-                    creature.attackTo(actions, opponent);
-                }
-            }
-            else
-            {
-                for (CreatureCard &creature : board[1])
-                {
-                    creature.attackTo(actions, board[3][0]);
+                    for (CreatureCard &enemy : board[2 + i])
+                    {
+                        enemy.calculateAttackScore(creature);
+                    }
+                    std::sort(board[2 + i].begin(), board[2 + i].end());
+                    std::reverse(board[2 + i].begin(), board[2 + i].end());
+                    creature.attackTo(actions, board[2 + i][board[2 + i].size() - 1]);
+                    if (board[2 + i][board[2 + i].size() - 1].defense() <= 0)
+                        board[2 + i].pop_back();
                 }
             }
         }
