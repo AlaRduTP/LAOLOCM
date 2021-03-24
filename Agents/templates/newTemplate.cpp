@@ -143,6 +143,19 @@ public:
     {
         target.atkDiff(attack_);
         target.getDamaged(-defense_);
+        for (int i = 0; i < 6; i++)
+        {
+            switch (target.cardType_)
+            {
+            case GREENITEM:
+                target.abilities_[i] |= abilities_[i];
+                break;
+            case REDITEM:
+                target.abilities_[i] &= !abilities_[i];
+                break;
+            }
+        }
+
         action += "USE " + std::to_string(instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
 
@@ -292,9 +305,17 @@ int main()
                 // TODO better strategy
                 case GREENITEM:
                     if (board[0].size() > 0)
-                        ((ItemCard *)&option)->use(actions, board[0][0]);
+                    {
+                        ((ItemCard *)&option)->use(actions, board[0][board[0].size() - 1]);
+                        if (board[0][board[0].size() - 1].defense() <= 0)
+                            board[0].pop_back();
+                    }
                     else if (board[1].size() > 0)
-                        ((ItemCard *)&option)->use(actions, board[1][0]);
+                    {
+                        ((ItemCard *)&option)->use(actions, board[1][board[1].size() - 1]);
+                        if (board[1][board[1].size() - 1].defense() <= 0)
+                            board[1].pop_back();
+                    }
                     break;
 
                 case REDITEM:
