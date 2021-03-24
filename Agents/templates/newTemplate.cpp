@@ -139,7 +139,7 @@ class ItemCard : public Card
 {
 public:
     ItemCard(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : Card(cardNumber, instanceId, location, cardType, cost, atk, def, abilities, myhealthChange, opponentHealthChange, cardDraw, lane, index){};
-    void use(std::string &action, CreatureCard &target)
+    void use(std::string &action, CreatureCard &target) const
     {
         target.atkDiff(attack_);
         target.getDamaged(-defense_);
@@ -199,7 +199,7 @@ int main()
 
         for (int i = 0; i < cardCount; i++)
         {
-            int cardNumber, instanceID, location, cardType, cost, attack, defense, myHealthChange, opponentHealthChange, cardDraw, lane = 0;
+            int cardNumber, instanceID, location, cardType, cost, attack, defense, myHealthChange, opponentHealthChange, cardDraw, lane = LEFT;
             std::string abilities;
             std::cin >> cardNumber >> instanceID >> location >> cardType >> cost >> attack >> defense >> abilities >> myHealthChange >> opponentHealthChange >> cardDraw;
             if (VERSION == 2)
@@ -313,10 +313,10 @@ int main()
             // Attack
             for (int i = 0; i < 2; i++)
             {
-                for (CreatureCard &creature : board[i])
+                for (auto &creature : board[i])
                 {
                     auto &targets = board[2 + i];
-                    for (CreatureCard &enemy : targets)
+                    for (auto &enemy : targets)
                     {
                         enemy.calculateAttackScore(creature);
                     }
