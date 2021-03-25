@@ -36,6 +36,17 @@ enum BoardNumber
     OPPONENTRIGHT
 };
 
+enum Ability
+{ // BCDGLWP
+    BREAKTHROUGH,
+    CHARGE,
+    DRAIN,
+    GUARD,
+    LETHAL,
+    WARD,
+    PLAYER
+};
+
 double p2(double a)
 {
     return a * a;
@@ -49,9 +60,9 @@ public:
         for (int i = 0; i < 7; ++i)
         { // the last ability "P" indicates thet if it is the player himself
             if (i < abilities.length() && abilities[i] != '-')
-                abilities_[i] = 1;
+                abilities_[i] = true;
             else
-                abilities_[i] = 0;
+                abilities_[i] = false;
         }
     };
     int instanceID() const { return instanceId_; };
@@ -68,7 +79,19 @@ public:
     bool operator==(const Card &rhs) const { return score_ == rhs.score_; };
     void calculateGetScore()
     {
-        score_ = (double)-attack_ / cost_;
+        switch (cardType_)
+        {
+        case CREATURE:
+        case GREENITEM:
+            score_ = (double)-attack_ / cost_;
+            break;
+        case REDITEM:
+            score_ = (double)defense_ / cost_ / 2;
+            break;
+        case BLUEITEM:
+            score_ = (double)(defense_ - myhealthChange_ + opponentHealthChange_) / cost_ / 2;
+            break;
+        }
     }
     void pick(std::string &action) const
     {
@@ -78,10 +101,10 @@ public:
     {
         if (amount > 0)
         {
-            if (abilities_[5])
-                abilities_[5] = 0;
+            if (abilities_[WARD])
+                abilities_[WARD] = 0;
             else
-                defDiff(abilities_[4] ? -999 : -amount);
+                defDiff(-amount);
         }
         else
             defDiff(-amount);
@@ -90,7 +113,7 @@ public:
 private:
     int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
     int myhealthChange_, opponentHealthChange_, cardDraw_, lane_, _index;
-    int abilities_[7]; // BCDGLWP
+    bool abilities_[7]; // BCDGLWP
     double score_ = -1;
     friend class CreatureCard;
     friend class ItemCard;
@@ -107,28 +130,30 @@ public:
     bool canKill(const CreatureCard &c) { return c.defense() <= this->attack(); };
     void attackTo(std::string &action, CreatureCard &target)
     {
-        target.getDamaged(this->attack());
+        target.getDamaged(abilities_[LETHAL] ? 999 : attack_);
         getDamaged(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
     void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack, int playerHP, int enemyHP)
     {
-        // score_ = (double)-attack_ / cost_;
-        score_ = {{exprs[0]}};
+        score_ = (double)-attack_ / cost_;
+        // score_ = {{exprs[0]}};
     }
     void calculateAttackScore(CreatureCard &attacker)
     {
-        if (abilities_[6]) // if there are no cards with Guard, attack the player first.
+        if (abilities_[PLAYER]) // if there are no cards with Guard, attack the player first.
             score_ = -500;
-        else if (attacker.ability(4)) // if it has Lethal, kill the one with the most health
+        else if (attacker.ability(BREAKTHROUGH)) // if it has Breakthrough, kill the one with the less health
+            score_ = defense_;
+        else if (attacker.ability(LETHAL)) // if it has Lethal, kill the one with the most health
             score_ = -defense_;
         else
         { // if it can kill, kill the one with the most health, if not, attack the one with the least health
-            score_ = attacker.attack() - (abilities_[5] ? 0 : defense_);
+            score_ = attacker.attack() - (abilities_[WARD] ? 0 : defense_);
             if (score_ < 0)
                 score_ = defense_;
         }
-        if (abilities_[3]) // the one with Guard needs to be damaged first
+        if (abilities_[GUARD]) // the one with Guard needs to be damaged first
             score_ -= 1000;
     }
 
@@ -161,7 +186,18 @@ public:
 
     void calculateUseScore()
     {
-        score_ = (double)-attack_ / cost_;
+        switch (cardType_)
+        {
+        case GREENITEM:
+            score_ = (double)-attack_ / cost_;
+            break;
+        case REDITEM:
+            score_ = (double)defense_ / cost_ / 2;
+            break;
+        case BLUEITEM:
+            score_ = (double)(defense_ - myhealthChange_ + opponentHealthChange_) / cost_ / 2;
+            break;
+        }
     }
 
 private:
@@ -298,7 +334,7 @@ int main()
                 {
                 case CREATURE:
                     ((CreatureCard *)&option)->summon(actions, option.lane());
-                    if (option.ability(1)) //charge
+                    if (option.ability(CHARGE))
                         board[option.lane()].push_back(*(CreatureCard *)&option);
                     break;
 
