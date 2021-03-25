@@ -55,10 +55,10 @@ double p2(double a)
 class Card
 {
 public:
-    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), _index(index)
+    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), index_(index)
     {
         for (int i = 0; i < 7; ++i)
-        { // the last ability "P" indicates thet if it is the player himself
+        { // the last ability "P" indicates that if it is the player himself
             if (i < abilities.length() && abilities[i] != '-')
                 abilities_[i] = true;
             else
@@ -95,7 +95,7 @@ public:
     }
     void pick(std::string &action) const
     {
-        action += "PICK " + std::to_string(_index);
+        action += "PICK " + std::to_string(index_);
     }
     void getDamaged(int amount)
     {
@@ -112,7 +112,7 @@ public:
 
 private:
     int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
-    int myhealthChange_, opponentHealthChange_, cardDraw_, lane_, _index;
+    int myhealthChange_, opponentHealthChange_, cardDraw_, lane_, index_;
     bool abilities_[7]; // BCDGLWP
     double score_ = -1;
     friend class CreatureCard;
