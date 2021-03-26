@@ -11,3 +11,6 @@ fitness.o
 main
 main.o
 output.txt
+
+a.out
+.idea
