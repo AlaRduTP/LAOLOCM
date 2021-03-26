@@ -55,7 +55,7 @@ double p2(double a)
 class Card
 {
 public:
-    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), myhealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), _index(index)
+    Card(int cardNumber, int instanceId, int location, int cardType, int cost, int atk, int def, std::string abilities, int myhealthChange, int opponentHealthChange, int cardDraw, int lane, int index) : cardNumber_(cardNumber), instanceId_(instanceId), location_(location), cardType_(cardType), cost_(cost), attack_(atk), defense_(def), myHealthChange_(myhealthChange), opponentHealthChange_(opponentHealthChange), cardDraw_(cardDraw), lane_(lane), _index(index)
     {
         for (int i = 0; i < 7; ++i)
         { // the last ability "P" indicates thet if it is the player himself
@@ -89,7 +89,7 @@ public:
             score_ = (double)defense_ / cost_ / 2;
             break;
         case BLUEITEM:
-            score_ = (double)(defense_ - myhealthChange_ + opponentHealthChange_) / cost_ / 2;
+            score_ = (double)(defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
             break;
         }
     }
@@ -99,20 +99,15 @@ public:
     }
     void getDamaged(int amount)
     {
-        if (amount > 0)
-        {
-            if (abilities_[WARD])
-                abilities_[WARD] = 0;
-            else
-                defDiff(-amount);
-        }
+        if (amount > 0 && abilities_[WARD])
+            abilities_[WARD] = false;
         else
             defDiff(-amount);
     }
 
 private:
     int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
-    int myhealthChange_, opponentHealthChange_, cardDraw_, lane_, _index;
+    int myHealthChange_, opponentHealthChange_, cardDraw_, lane_, _index;
     bool abilities_[7]; // BCDGLWP
     double score_ = -1;
     friend class CreatureCard;
@@ -134,10 +129,10 @@ public:
         getDamaged(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
-    void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack, int playerHP, int enemyHP)
+    void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
     {
-        score_ = (double)-attack_ / cost_;
-        // score_ = {{exprs[0]}};
+        // score_ = (double)-attack_ / cost_;
+        score_ = {{exprs[0]}};
     }
     void calculateAttackScore(CreatureCard &attacker)
     {
@@ -195,7 +190,7 @@ public:
             score_ = (double)defense_ / cost_ / 2;
             break;
         case BLUEITEM:
-            score_ = (double)(defense_ - myhealthChange_ + opponentHealthChange_) / cost_ / 2;
+            score_ = (double)(defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
             break;
         }
     }
@@ -319,7 +314,7 @@ int main()
             {
                 if (option.cardType() == CREATURE)
                 {
-                    ((CreatureCard *)&option)->calculateUseScore(enemyTotalHP[option.lane()], ownTotalHP[option.lane()], enemyTotalAttack[option.lane()], ownTotalAttack[option.lane()], playerHealth, opponentHealth);
+                    ((CreatureCard *)&option)->calculateUseScore(enemyTotalHP[option.lane()], ownTotalHP[option.lane()], enemyTotalAttack[option.lane()], ownTotalAttack[option.lane()]);
                 }
                 else
                 { // Item
