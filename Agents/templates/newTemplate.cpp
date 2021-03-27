@@ -79,19 +79,20 @@ public:
     bool operator==(const Card &rhs) const { return score_ == rhs.score_; };
     void calculateGetScore()
     {
-        switch (cardType_)
-        {
-        case CREATURE:
-        case GREENITEM:
-            score_ = (double)-attack_ / cost_;
-            break;
-        case REDITEM:
-            score_ = (double)defense_ / cost_ / 2;
-            break;
-        case BLUEITEM:
-            score_ = (double)(defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
-            break;
-        }
+        // switch (cardType_)
+        // {
+        // case CREATURE:
+        // case GREENITEM:
+        //     score_ = (double)-attack_ / cost_;
+        //     break;
+        // case REDITEM:
+        //     score_ = (double)defense_ / cost_ / 2;
+        //     break;
+        // case BLUEITEM:
+        //     score_ = (double)(defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
+        //     break;
+        // }
+        score_ = {{exprs[0]}};
     }
     void pick(std::string &action) const
     {
@@ -132,7 +133,8 @@ public:
     void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
     {
         // score_ = (double)-attack_ / cost_;
-        score_ = {{exprs[0]}};
+        // score_ = {{exprs[0]}};
+        score_ = p2(p2(log(enemyTotalHP + exp(attack_ * log(abilities_[3]))))) * abilities_[4];
     }
     void calculateAttackScore(CreatureCard &attacker)
     {
