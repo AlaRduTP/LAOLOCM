@@ -339,23 +339,27 @@ int main()
                 case GREENITEM:
                     if (board[0].size() > 0)
                     {
-                        ((ItemCard *)&option)->use(actions, board[0][board[0].size() - 1]);
-                        if (board[0][board[0].size() - 1].defense() <= 0)
-                            board[0].pop_back();
+                        ((ItemCard *)&option)->use(actions, board[0][0]);
                     }
                     else if (board[1].size() > 0)
                     {
-                        ((ItemCard *)&option)->use(actions, board[1][board[1].size() - 1]);
-                        if (board[1][board[1].size() - 1].defense() <= 0)
-                            board[1].pop_back();
+                        ((ItemCard *)&option)->use(actions, board[1][0]);
                     }
                     break;
 
                 case REDITEM:
                     if (board[2].size() > 0)
-                        ((ItemCard *)&option)->use(actions, board[2][0]);
+                    {
+                        ((ItemCard *)&option)->use(actions, board[2][board[2].size() - 1]);
+                        if (board[2][board[2].size() - 1].defense() <= 0)
+                            board[2].pop_back();
+                    }
                     else if (board[3].size() > 0)
-                        ((ItemCard *)&option)->use(actions, board[3][0]);
+                    {
+                        ((ItemCard *)&option)->use(actions, board[3][board[3].size() - 1]);
+                        if (board[3][board[3].size() - 1].defense() <= 0)
+                            board[3].pop_back();
+                    }
                     break;
 
                 case BLUEITEM:
@@ -370,6 +374,8 @@ int main()
                 for (auto &creature : board[i])
                 {
                     auto &targets = board[2 + i];
+                    if (targets.size() <= 0)
+                        break;
                     for (auto &enemy : targets)
                     {
                         enemy.calculateAttackScore(creature);
