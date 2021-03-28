@@ -92,7 +92,8 @@ public:
         //     score_ = (defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
         //     break;
         // }
-        score_ = {{exprs[0]}};
+        // score_ = {{exprs[0]}};
+        score_ = ((p2(exp(cardDraw_ + abilities_[2])) * (cost_ + (abilities_[4] / abilities_[1]))) + ((cost_ + (exp((p2(exp((exp(p2(exp(abilities_[0] + abilities_[2]))) * (cardDraw_ / abilities_[3])) + abilities_[2])) + (cost_ + (abilities_[4] / sqrt((p2(exp(cardDraw_ + abilities_[5])) * (cost_ + (abilities_[4] / log(cost_ + exp(exp((exp(exp(cardDraw_ + abilities_[2])) - (cost_ + (abilities_[4] / log(cost_ + exp(attack_))))) + exp(opponentHealthChange_ + attack_))))))) + abilities_[3])))) + ((cost_ / abilities_[1]) - ((cost_ + (attack_ / sqrt((p2(exp(cardDraw_)) * (cost_ + (abilities_[4] / log(cost_ + exp(attack_))))) + abilities_[3]))) + attack_))) * exp(cardDraw_ + abilities_[2]))) - (cost_ / abilities_[1])));
     }
     void pick(std::string &action) const
     {
@@ -342,7 +343,11 @@ int main()
             std::sort(cardOptions.begin(), cardOptions.end());
             for (const auto &option : cardOptions)
             {
+                if (playerMana < option.cost())
+                    continue;
+                playerMana -= option.cost();
                 int boardNumber = -1;
+
                 switch (option.cardType())
                 {
                 case CREATURE:
