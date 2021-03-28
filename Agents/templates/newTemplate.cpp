@@ -107,9 +107,9 @@ public:
     }
 
 private:
-    int cardNumber_, instanceId_, location_, cardType_, cost_, attack_, defense_;
-    int myHealthChange_, opponentHealthChange_, cardDraw_, lane_, index_;
-    bool abilities_[7]; // BCDGLWP
+    int cardNumber_, instanceId_, location_, cardType_, lane_, index_;
+    double myHealthChange_, opponentHealthChange_, cardDraw_, cost_, attack_, defense_;
+    double abilities_[7]; // BCDGLWP
     double score_ = -1;
     friend class CreatureCard;
     friend class ItemCard;
@@ -132,7 +132,7 @@ public:
     };
     void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
     {
-        // score_ = (double)-attack_ / cost_;
+        // score_ = -attack_ / cost_;
         // score_ = {{exprs[0]}};
         score_ = p2(p2(log(enemyTotalHP + exp(attack_ * log(abilities_[3]))))) * abilities_[4];
     }
@@ -170,10 +170,10 @@ public:
             switch (target.cardType_)
             {
             case GREENITEM:
-                target.abilities_[i] |= abilities_[i];
+                target.abilities_[i] = abilities_[i] || target.abilities_[i];
                 break;
             case REDITEM:
-                target.abilities_[i] &= !abilities_[i];
+                target.abilities_[i] = !abilities_[i] && target.abilities_[i];
                 break;
             }
         }
@@ -293,8 +293,6 @@ int main()
                 }
             }
         }
-        board[OPPONENTLEFT].push_back(opponent);
-        board[OPPONENTRIGHT].push_back(opponent);
 
         std::string actions;
 
@@ -350,14 +348,14 @@ int main()
                 case REDITEM:
                     if (board[2].size() > 0)
                     {
-                        ((ItemCard *)&option)->use(actions, board[2][board[2].size() - 1]);
-                        if (board[2][board[2].size() - 1].defense() <= 0)
+                        ((ItemCard *)&option)->use(actions, board[2].back());
+                        if (board[2].back().defense() <= 0)
                             board[2].pop_back();
                     }
                     else if (board[3].size() > 0)
                     {
-                        ((ItemCard *)&option)->use(actions, board[3][board[3].size() - 1]);
-                        if (board[3][board[3].size() - 1].defense() <= 0)
+                        ((ItemCard *)&option)->use(actions, board[3].back());
+                        if (board[3].back().defense() <= 0)
                             board[3].pop_back();
                     }
                     break;
@@ -367,6 +365,9 @@ int main()
                     break;
                 }
             }
+
+            board[OPPONENTLEFT].push_back(opponent);
+            board[OPPONENTRIGHT].push_back(opponent);
 
             // Attack
             for (int i = 0; i < 2; i++)
@@ -382,8 +383,8 @@ int main()
                     }
                     std::sort(targets.begin(), targets.end());
                     std::reverse(targets.begin(), targets.end());
-                    creature.attackTo(actions, targets[targets.size() - 1]);
-                    if (targets[targets.size() - 1].defense() <= 0)
+                    creature.attackTo(actions, targets.back());
+                    if (targets.back().defense() <= 0)
                         targets.pop_back();
                 }
             }
