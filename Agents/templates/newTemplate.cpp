@@ -162,6 +162,14 @@ public:
         if (abilities_[GUARD]) // the one with Guard needs to be damaged first
             score_ -= 1000;
     }
+    void calculateAttackOrderScore()
+    {
+        // The more damage it has, the later it will attack
+        score_ = attack_;
+        // If it has Lethal, it should attack first
+        if (abilities_[LETHAL])
+            score_ -= 1000;
+    }
 
 private:
 };
@@ -403,6 +411,12 @@ int main()
             // Attack
             for (int i = 0; i < 2; i++)
             {
+                for (auto &creature : board[i])
+                {
+                    creature.calculateAttackOrderScore();
+                }
+                std::sort(board[i].begin(), board[i].end());
+
                 for (auto &creature : board[i])
                 {
                     auto &targets = board[2 + i];
