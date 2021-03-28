@@ -127,7 +127,7 @@ public:
     bool canKill(const CreatureCard &c) { return c.defense() <= this->attack(); };
     void attackTo(std::string &action, CreatureCard &target)
     {
-        target.getDamaged(abilities_[LETHAL] ? 999 : attack_);
+        target.getDamaged(abilities_[LETHAL] && !target.ability(PLAYER) ? 999 : attack_);
         getDamaged(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
