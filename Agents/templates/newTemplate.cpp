@@ -176,7 +176,7 @@ public:
         target.getDamaged(-defense_);
         for (int i = 0; i < 6; i++)
         {
-            switch (target.cardType_)
+            switch (cardType_)
             {
             case GREENITEM:
                 target.abilities_[i] = abilities_[i] || target.abilities_[i];
