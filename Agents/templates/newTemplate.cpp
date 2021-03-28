@@ -136,7 +136,7 @@ public:
         // score_ = {{exprs[0]}};
         // score_ = p2(p2(log(enemyTotalHP + exp(attack_ * log(abilities_[3]))))) * abilities_[4];
     }
-    void calculateAttackScore(CreatureCard &attacker)
+    void calculateAttackScore(const CreatureCard &attacker)
     {
         if (abilities_[PLAYER]) // if there are no cards with Guard, attack the player first.
             score_ = -500;
@@ -150,6 +150,15 @@ public:
             if (score_ < 0)
                 score_ = defense_;
         }
+        if (abilities_[GUARD]) // the one with Guard needs to be damaged first
+            score_ -= 1000;
+    }
+    void calculateRedItemScore(const Card &attacker)
+    {
+        // if it can kill, kill the one with the most health, if not, attack the one with the least health
+        score_ = -attacker.defense() - (abilities_[WARD] ? 0 : defense_);
+        if (score_ < 0)
+            score_ = defense_;
         if (abilities_[GUARD]) // the one with Guard needs to be damaged first
             score_ -= 1000;
     }
@@ -325,6 +334,7 @@ int main()
             std::sort(cardOptions.begin(), cardOptions.end());
             for (const auto &option : cardOptions)
             {
+                int boardNumber = -1;
                 switch (option.cardType())
                 {
                 case CREATURE:
@@ -346,17 +356,38 @@ int main()
                     break;
 
                 case REDITEM:
-                    if (board[2].size() > 0)
+                    for (auto &enemy : board[2])
                     {
-                        ((ItemCard *)&option)->use(actions, board[2].back());
-                        if (board[2].back().defense() <= 0)
-                            board[2].pop_back();
+                        enemy.calculateRedItemScore(option);
+                    }
+                    std::sort(board[2].begin(), board[2].end());
+                    std::reverse(board[2].begin(), board[2].end());
+
+                    for (auto &enemy : board[3])
+                    {
+                        enemy.calculateRedItemScore(option);
+                    }
+                    std::sort(board[3].begin(), board[3].end());
+                    std::reverse(board[3].begin(), board[3].end());
+
+                    if (board[2].size() > 0 && board[3].size() > 0)
+                    {
+                        boardNumber = board[2].back() < board[3].back() ? 2 : 3;
+                    }
+                    else if (board[2].size() > 0)
+                    {
+                        boardNumber = 2;
                     }
                     else if (board[3].size() > 0)
                     {
-                        ((ItemCard *)&option)->use(actions, board[3].back());
-                        if (board[3].back().defense() <= 0)
-                            board[3].pop_back();
+                        boardNumber = 3;
+                    }
+
+                    if (boardNumber != -1)
+                    {
+                        ((ItemCard *)&option)->use(actions, board[boardNumber].back());
+                        if (board[boardNumber].back().defense() <= 0)
+                            board[boardNumber].pop_back();
                     }
                     break;
 
