@@ -72,8 +72,8 @@ const int REFRESH_INTERVAL = get_config<int>("REFRESH_INTERVAL");
 const int GAME_COUNT_REFRESH_INTERVAL = get_config<int>("GAME_COUNT_REFRESH_INTERVAL");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
-	// {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
+	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+	// {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
 	{1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18},
 };
