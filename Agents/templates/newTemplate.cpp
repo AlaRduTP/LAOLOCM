@@ -134,7 +134,8 @@ public:
     void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
     {
         // score_ = -attack_ / cost_;
-        score_ = {{exprs[0]}};
+        // score_ = {{exprs[0]}};
+        score_ = ((((enemyTotalHP / sqrt(exp(((defense_ + sqrt(exp(((enemyTotalHP / sqrt(exp((defense_ + sqrt(exp(((cardDraw_ + sqrt(exp(ownTotalHP))) + p2((enemyTotalHP / sqrt(exp((defense_ - sqrt(exp((enemyTotalHP / sqrt(exp((defense_ + sqrt(exp(((cardDraw_ + sqrt(exp(ownTotalHP))) / enemyTotalHP) - p2(exp(exp(ownTotalHP)))))) - exp(myHealthChange_)))) - p2(p2(exp(cost_)))))) - exp(myHealthChange_)))) + sqrt(exp((defense_ * sqrt(exp(ownTotalHP))) - exp(cost_))))) - p2(p2(exp(sqrt(exp(cost_)))))))) - exp(myHealthChange_)))) + sqrt(sqrt(abilities_[3]))) - p2(exp(exp(log(sqrt(exp(cost_))))))))) + sqrt(exp(((abilities_[5] + sqrt(exp(exp(ownTotalHP)))) + sqrt(sqrt(log(sqrt(exp(cost_)))))) - p2(exp(exp(log(sqrt(exp(cost_))))))))) - exp(myHealthChange_)))) + sqrt(exp((defense_ * sqrt(exp(ownTotalHP))) - exp(cost_)))) - exp(cost_)) - myHealthChange_);
         // score_ = p2(p2(log(enemyTotalHP + exp(attack_ * log(abilities_[3]))))) * abilities_[4];
     }
     void calculateAttackScore(const CreatureCard &attacker)
