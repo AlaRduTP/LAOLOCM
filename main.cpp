@@ -9,6 +9,7 @@
 #include <sstream>
 #include <unordered_map>
 #include "fitness.h"
+#include <stack>
 
 using namespace std;
 
@@ -91,6 +92,10 @@ public:
 	char operate;
 	int offspring_count = 0;
 	int tree_index;
+
+	Node(int child_length) : parent(NULL), child_length(child_length)
+	{
+	}
 
 	Node(int index, Node *p, int level = 0) : parent(p), tree_index(index)
 	{
@@ -243,6 +248,116 @@ public:
 		child_length = 0;
 		change();
 	}
+
+	static Node *from_string(string s)
+	{
+		s = '(' + s + ')';
+		stack<char> operators;
+		vector<Node *> operates;
+
+		string unary_operator[] = {"p2", "sqrt", "log", "exp"};
+		string unary_operator_char = "srle";
+		for (int i = 0; s[i]; i++)
+		{
+			bool match = false;
+			for (int j = 0; j < 4; j++)
+			{
+				if (s.compare(i, unary_operator[j].size(), unary_operator[j]) == 0)
+				{
+					operators.push('(');
+					operators.push(unary_operator_char[j]);
+					i += unary_operator[j].size();
+					match = true;
+					break;
+				}
+			}
+
+			if (s[i] == ' ' || match)
+			{
+			}
+			else if (isdigit(s[i]) || (s[i] == '-' && i > 0 && string("1234567890)}").find(s[i - 1]) == string::npos))
+			{
+				int j = i + 1;
+				while (isdigit(s[j]))
+					j++;
+				int value = stoi(s.substr(i, j - i));
+				Node *n = new Node(0);
+				n->value = value;
+				n->is_variable = false;
+
+				operates.push_back(n);
+				i = j - 1;
+			}
+			else if (s[i] == '{')
+			{
+				int j = i + 2;
+				while (isdigit(s[j]))
+					j++;
+				int index = stoi(s.substr(i + 1, j - i - 1));
+				Node *n = new Node(0);
+				n->variable_index = index;
+				n->is_variable = true;
+
+				operates.push_back(n);
+				i = j;
+			}
+			else if (string("(+-*/").find(s[i]) != string::npos)
+			{
+				operators.push(s[i]);
+			}
+			else if (s[i] == ')')
+			{
+				char c = operators.top();
+				operators.pop();
+				while (c != '(')
+				{
+					Node *n, *n0, *n1;
+
+					switch (c)
+					{
+					case '+':
+					case '-':
+					case '*':
+					case '/':
+						n = new Node(2);
+						n->operate = c;
+						n1 = operates.back();
+						operates.pop_back();
+						n0 = operates.back();
+						operates.pop_back();
+
+						n->childs[0] = n0;
+						n0->parent = n;
+						n->childs[1] = n1;
+						n1->parent = n;
+
+						operates.push_back(n);
+						break;
+
+					case 's':
+					case 'r':
+					case 'l':
+					case 'e':
+						n = new Node(1);
+						n->operate = c;
+						n0 = operates.back();
+						operates.pop_back();
+
+						n->childs[0] = n0;
+						n0->parent = n;
+
+						operates.push_back(n);
+						break;
+					}
+
+					c = operators.top();
+					operators.pop();
+				}
+			}
+		}
+
+		return operates[0];
+	}
 };
 
 class DNA
@@ -343,7 +458,7 @@ bool compare(DNA *a, DNA *b)
 		return true;
 	else if (isinf(v2))
 		return false;
-	else if (v1==v2)
+	else if (v1 == v2)
 		return a->trees[0]->offspring_count < a->trees[0]->offspring_count;
 	else
 		return v1 > v2;
