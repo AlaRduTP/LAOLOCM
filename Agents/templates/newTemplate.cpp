@@ -373,20 +373,20 @@ public:
 
 void Card::calculateGetScore()
 {
-    switch (cardType_)
-    {
-    case CREATURE:
-    case GREENITEM:
-        score_ = -attack_ / cost_;
-        break;
-    case REDITEM:
-        score_ = defense_ / cost_ / 2;
-        break;
-    case BLUEITEM:
-        score_ = (defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
-        break;
-    }
-    // score_ = {{exprs[0]}};
+    // switch (cardType_)
+    // {
+    // case CREATURE:
+    // case GREENITEM:
+    //     score_ = -attack_ / cost_;
+    //     break;
+    // case REDITEM:
+    //     score_ = defense_ / cost_ / 2;
+    //     break;
+    // case BLUEITEM:
+    //     score_ = (defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
+    //     break;
+    // }
+    score_ = {{exprs[0]}};
 }
 
 void CreatureCard::calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
