@@ -34,6 +34,7 @@ GP_OPERAND = [
     'enemyAttack',
     'enemyDefence',
     'enemyAbilities',
+    'abilities_[6]',
 ]
 
 REFEREE = './referee/Tester'

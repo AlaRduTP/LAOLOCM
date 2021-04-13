@@ -373,20 +373,20 @@ public:
 
 void Card::calculateGetScore()
 {
-    // switch (cardType_)
-    // {
-    // case CREATURE:
-    // case GREENITEM:
-    //     score_ = -attack_ / cost_;
-    //     break;
-    // case REDITEM:
-    //     score_ = defense_ / cost_ / 2;
-    //     break;
-    // case BLUEITEM:
-    //     score_ = (defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
-    //     break;
-    // }
-    score_ = {{exprs[0]}};
+    switch (cardType_)
+    {
+    case CREATURE:
+    case GREENITEM:
+        score_ = -attack_ / cost_;
+        break;
+    case REDITEM:
+        score_ = defense_ / cost_ / 2;
+        break;
+    case BLUEITEM:
+        score_ = (defense_ - myHealthChange_ + opponentHealthChange_) / cost_ / 2;
+        break;
+    }
+    // score_ = {{exprs[0]}};
 }
 
 void CreatureCard::calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
@@ -397,20 +397,21 @@ void CreatureCard::calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemy
 }
 void CreatureCard::calculateAttackScore(const CreatureCard &attacker)
 {
-    if (abilities_[PLAYER]) // if there are no cards with Guard, attack the player first.
-        score_ = -500;
-    else if (attacker.ability(BREAKTHROUGH)) // if it has Breakthrough, kill the one with the less health
-        score_ = defense_;
-    else if (attacker.ability(LETHAL)) // if it has Lethal, kill the one with the most health
-        score_ = -defense_;
-    else
-    { // if it can kill, kill the one with the most health, if not, attack the one with the least health
-        score_ = attacker.attack() - (abilities_[WARD] ? 0 : defense_);
-        if (score_ < 0)
-            score_ = defense_;
-    }
-    if (abilities_[GUARD]) // the one with Guard needs to be damaged first
-        score_ -= 1000;
+    // if (abilities_[PLAYER]) // if there are no cards with Guard, attack the player first.
+    //     score_ = -500;
+    // else if (attacker.ability(BREAKTHROUGH)) // if it has Breakthrough, kill the one with the less health
+    //     score_ = defense_;
+    // else if (attacker.ability(LETHAL)) // if it has Lethal, kill the one with the most health
+    //     score_ = -defense_;
+    // else
+    // { // if it can kill, kill the one with the most health, if not, attack the one with the least health
+    //     score_ = attacker.attack() - (abilities_[WARD] ? 0 : defense_);
+    //     if (score_ < 0)
+    //         score_ = defense_;
+    // }
+    // if (abilities_[GUARD]) // the one with Guard needs to be damaged first
+    //     score_ -= 1000;
+    score_ = {{exprs[0]}};
 }
 void CreatureCard::calculateRedItemScore(const Card &attacker)
 {
