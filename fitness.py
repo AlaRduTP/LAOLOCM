@@ -31,9 +31,14 @@ GP_OPERAND = [
     'ownTotalHP',
     'enemyTotalAttack',
     'ownTotalAttack',
-    'enemyAttack',
-    'enemyDefence',
-    'enemyAbilities',
+    'attacker.attack_',
+    'attacker.defense_',
+    'attacker.abilities_[0]',
+    'attacker.abilities_[1]',
+    'attacker.abilities_[2]',
+    'attacker.abilities_[3]',
+    'attacker.abilities_[4]',
+    'attacker.abilities_[5]',
     'abilities_[6]',
 ]
 
