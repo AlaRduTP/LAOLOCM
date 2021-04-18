@@ -49,15 +49,16 @@ REFEREE = './referee/Tester'
 BASELINE = 'python3\\ Agents/ReinforcedGreediness/agent.py'
 AGENT = f'./{AGENT_BIN}'
 GAMES = 10
+SEED = 0
 
-
-def referee(game_count):
+def referee(game_count, game_seed):
     os.system(f'g++ -std=c++17 -O3 {AGENT_SRC} -o {AGENT_BIN}')
     ret = subprocess.check_output([
         f'{REFEREE}',
         f'--baseline="{BASELINE}"',
         f'--agent="{AGENT}"',
         f'--games={game_count}',
+        f'--seed={game_seed}',
     ]).decode('utf8').split('\n')
     return ret
 
@@ -72,11 +73,11 @@ def test(expression, game_count=GAMES):
     return fitness([expression.encode()], game_count, True)
 
 
-def fitness(genes, game_count=GAMES, extra_info=False):
+def fitness(genes, game_count=GAMES, game_seed=SEED, extra_info=False):
     exprs = [gene2expr(gene.decode()) for gene in genes]
     TMPL.stream(exprs=exprs).dump(str(AGENT_SRC))
 
-    result = referee(game_count)
+    result = referee(game_count, game_seed)
     if extra_info:
         for line in result:
             print(' '.join(f'{n: >3}' for n in line.split()))

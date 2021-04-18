@@ -17,6 +17,7 @@ when isMainModule:
     var sofar = 0
     var wins1 = 0
     var wins2 = 0
+    var seed = 0
 
     var hps1 = newSeq[int](0)
     var hps2 = newSeq[int](0)
@@ -29,6 +30,7 @@ when isMainModule:
       if key == "referee": referee = value
       if key == "replays": replays = value.parseBool
       if key == "threads": threads = value.parseInt
+      if key == "seed": seed = value.parseInt
 
     if not plain:
       echo &"{stamp()} Referee: {referee}"
@@ -40,7 +42,8 @@ when isMainModule:
 
     var commands = newSeq[string](games)
     for index in commands.low .. commands.high:
-      commands[index] = &"""{referee} -p1 "{baseline}" -p2 "{agent}" -d "draftChoicesSeed={index} seed={index} shufflePlayer0Seed={index} shufflePlayer1Seed={index}""""
+      let seedI = seed + index
+      commands[index] = &"""{referee} -p1 "{baseline}" -p2 "{agent}" -d "draftChoicesSeed={seedI} seed={seedI} shufflePlayer0Seed={seedI} shufflePlayer1Seed={seedI}""""
 
     discard execProcesses(
       cmds = commands,
