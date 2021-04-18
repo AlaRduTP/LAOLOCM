@@ -432,7 +432,7 @@ public:
 		vector<string> genes;
 		for (int i = 0; i < TREE_COUNT; i++)
 			genes.push_back(trees[i]->to_string());
-		score = ::fitness(genes, need_game_count);
+		score = ::fitness(genes, need_game_count/*, set_the_game_seed_here*/);
 		game_played = need_game_count;
 		last_generation = generation;
 		cout << '.' << flush;
