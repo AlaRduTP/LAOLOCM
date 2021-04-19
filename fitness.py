@@ -69,8 +69,8 @@ def gene2expr(gene):
     return gene
 
 
-def test(expression, game_count=GAMES):
-    return fitness([expression.encode()], game_count, True)
+def test(expression, game_count=GAMES , game_seed=SEED):
+    return fitness([expression.encode()], game_count, game_seed, True)
 
 
 def fitness(genes, game_count=GAMES, game_seed=SEED, extra_info=False):
