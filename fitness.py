@@ -95,4 +95,7 @@ def fitness(genes, game_count=GAMES, game_seed=SEED, extra_info=False):
         a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
     wins = [*map(int, result[2].split())]
     win_rate = wins[1] / (wins[0] + wins[1])
+    if extra_info:
+        print(f'avg_hp_diff: {avg_hp_diff}')
+        print(f'win_rate: {win_rate}')
     return avg_hp_diff + win_rate * WIN_RATE_WEIGHT
