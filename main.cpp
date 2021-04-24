@@ -71,6 +71,7 @@ const int GAME_COUNT_C2 = get_config<int>("GAME_COUNT_C2");
 const int GAME_COUNT_C3 = get_config<int>("GAME_COUNT_C3");
 const int REFRESH_INTERVAL = get_config<int>("REFRESH_INTERVAL");
 const int GAME_COUNT_REFRESH_INTERVAL = get_config<int>("GAME_COUNT_REFRESH_INTERVAL");
+const double RANDOM_CHILD_PROPORTION = get_config<double>("RANDOM_CHILD_PROPORTION");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
 	// {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
@@ -432,7 +433,7 @@ public:
 		vector<string> genes;
 		for (int i = 0; i < TREE_COUNT; i++)
 			genes.push_back(trees[i]->to_string());
-		score = ::fitness(genes, need_game_count/*, set_the_game_seed_here*/);
+		score = ::fitness(genes, need_game_count /*, set_the_game_seed_here*/);
 		game_played = need_game_count;
 		last_generation = generation;
 		cout << '.' << flush;
@@ -505,8 +506,11 @@ int main(int argc, char *argv[])
 			}
 		}
 		sort(DNAs, DNAs + DNA_COUNT, compare);
-		for (int j = LEFT_AMOUNT; j < DNA_COUNT; j++)
+		for (int j = LEFT_AMOUNT * (1 - RANDOM_CHILD_PROPORTION); j < DNA_COUNT; j++)
 			DNAs[j]->destory();
+
+		for (int j = LEFT_AMOUNT * (1 - RANDOM_CHILD_PROPORTION); j < LEFT_AMOUNT; j++)
+			DNAs[j] = new DNA();
 
 		cout << "\nGeneration " << generation << endl;
 		cout << DNAs[0]->trees[0]->to_string() << endl;

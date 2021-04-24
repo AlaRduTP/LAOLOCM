@@ -50,6 +50,8 @@ BASELINE = 'python3\\ Agents/ReinforcedGreediness/agent.py'
 AGENT = f'./{AGENT_BIN}'
 GAMES = 10
 SEED = 0
+WIN_RATE_WEIGHT = 50
+
 
 def referee(game_count, game_seed):
     os.system(f'g++ -std=c++17 -O3 {AGENT_SRC} -o {AGENT_BIN}')
@@ -69,7 +71,7 @@ def gene2expr(gene):
     return gene
 
 
-def test(expression, game_count=GAMES , game_seed=SEED):
+def test(expression, game_count=GAMES, game_seed=SEED):
     return fitness([expression.encode()], game_count, game_seed, True)
 
 
@@ -91,4 +93,6 @@ def fitness(genes, game_count=GAMES, game_seed=SEED, extra_info=False):
 
     avg_hp_diff = sum(
         a - b for a, b in zip(agent_hps, baseline_hps)) / len(agent_hps)
-    return avg_hp_diff
+    wins = [*map(int, result[2].split())]
+    win_rate = wins[1] / (wins[0] + wins[1])
+    return avg_hp_diff + win_rate * WIN_RATE_WEIGHT
