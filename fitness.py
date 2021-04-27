@@ -47,6 +47,7 @@ REFEREE = './referee/Tester'
 # BASELINE = './Agents/Chad/agent/target/release/agent'
 # BASELINE = 'python3\\ Agents/Baseline1/main.py'
 BASELINE = 'python3\\ Agents/ReinforcedGreediness/agent.py'
+# BASELINE = LOL_FOLDER / 'agent2'
 AGENT = f'./{AGENT_BIN}'
 GAMES = 10
 SEED = 0
