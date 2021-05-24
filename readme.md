@@ -49,8 +49,16 @@ rustup install nightly
 
 ## Compilation
 
+### Server
+
 ```sh
-make
+bash mpi-server/build.sh
+```
+
+### Client
+
+```sh
+bash mpi-client/build.sh
 ```
 
 #### clean
@@ -59,7 +67,7 @@ make
 make clean
 ```
 
-### Chad
+<!-- ### Chad
 
 ```sh
 make -C Agents/Chad/agent
@@ -69,4 +77,48 @@ make -C Agents/Chad/agent
 
 ```sh
 make -C Agents/Chad/agent clean
+``` -->
+
+## Run
+
+### Server
+
+```sh
+bash mpi-server/start.sh <number_of_islands> <number_of_migrations>
+```
+
+For the first time, first run the following commands:
+
+#### Docker Swarm
+
+##### Init
+
+```sh
+docker swarm init
+docker network create -d overlay --attachable mpi-overlay
+```
+
+##### Get join-token
+
+```sh
+docker swarm join-token worker
+```
+
+### Client
+
+Run the Server first, then the Client.  
+You will get `<mpi-uri>` from the information when the Server starts.
+
+```sh
+bash mpi-server/start.sh <mpi-uri>
+```
+
+For the first time, first run the following command:
+
+#### Docker Swarm
+
+##### Join Swarm
+
+```sh
+docker swarm join --token <join-token>
 ```

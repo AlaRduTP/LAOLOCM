@@ -10,6 +10,16 @@
 #include <unordered_map>
 #include "fitness.h"
 #include <stack>
+#include <random>
+#include <chrono>	/* systemclock */
+
+#include <mpi.h>
+
+#define MPI_SIZE_T MPI_UNSIGNED_LONG_LONG
+
+#define TAG_MIGRATION	0
+#define TAG_BUFF_SIZE	1
+#define TAG_BUFF	2
 
 using namespace std;
 
@@ -72,6 +82,7 @@ const int GAME_COUNT_C3 = get_config<int>("GAME_COUNT_C3");
 const int REFRESH_INTERVAL = get_config<int>("REFRESH_INTERVAL");
 const int GAME_COUNT_REFRESH_INTERVAL = get_config<int>("GAME_COUNT_REFRESH_INTERVAL");
 const double RANDOM_CHILD_PROPORTION = get_config<double>("RANDOM_CHILD_PROPORTION");
+const double MIGRATION_RATE = get_config<double>("MIGRATION_RATE");
 const int TREE_COUNT = 1;
 const vector<int> TREE_VARIBALS[3] = {
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
@@ -80,7 +91,9 @@ const vector<int> TREE_VARIBALS[3] = {
 	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
 	{1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18},
 };
-int generation;
+
+int generation,
+    migration = 0;
 
 class Node
 {
@@ -466,8 +479,40 @@ bool compare(DNA *a, DNA *b)
 		return v1 > v2;
 }
 
+void finalize_handler() {
+	MPI_Finalize();
+}
+
 int main(int argc, char *argv[])
 {
+	MPI_Init(&argc, &argv);
+	atexit(finalize_handler);
+
+	int world_size, world_rank;
+	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+	cout << "size: " << world_size << endl;
+	cout << "rank: " << world_rank << endl;
+
+	char port_name[MPI_MAX_PORT_NAME];
+	MPI_Lookup_name("server", MPI_INFO_NULL, port_name);
+
+	cout << "port name: " << port_name << endl;
+
+	MPI_Comm server;
+	MPI_Comm_connect(port_name, MPI_INFO_NULL, 0, MPI_COMM_SELF, &server);
+
+	cout << "Connection established." << endl;
+
+	MPI_Status tmp_status;
+
+	int MAX_MIGRATIONS;
+	MPI_Recv(&MAX_MIGRATIONS, 1, MPI_SIZE_T, MPI_ANY_SOURCE, TAG_MIGRATION, server, &tmp_status);
+
+	const int MIGRATION_FREQ = 0 <  MAX_MIGRATIONS ? GENERATION_COUNT / MAX_MIGRATIONS : GENERATION_COUNT + 1;
+	cout << "Migration frequency: " << MIGRATION_FREQ << endl;
+
 	fitness_initialize();
 
 	ios::sync_with_stdio(false);
@@ -528,6 +573,30 @@ int main(int argc, char *argv[])
 
 		if (DNAs[0]->fitness() >= 80)
 			break;
+
+		if (migration < MAX_MIGRATIONS && (generation + 1) % MIGRATION_FREQ == 0)
+		{
+			cout << "\nMigration " << migration++ << endl;
+
+			shuffle(DNAs, DNAs + LEFT_AMOUNT, default_random_engine(chrono::system_clock::now().time_since_epoch().count()));
+
+			ostringstream oss;
+			for (int j = LEFT_AMOUNT * (1 - MIGRATION_RATE); j < LEFT_AMOUNT; j++)
+				oss << DNAs[j]->trees[0]->to_string() << endl;
+			string DNA_str = oss.str();
+
+			size_t DNA_str_size = DNA_str.length() + 1;
+			MPI_Send(&DNA_str_size, 1, MPI_SIZE_T, 0, TAG_BUFF_SIZE, server);
+			MPI_Send(&DNA_str[0], DNA_str_size, MPI_CHAR, 0, TAG_BUFF, server);
+
+			cout << "Sent:\n" << DNA_str;
+
+			MPI_Recv(&DNA_str_size, 1, MPI_SIZE_T, MPI_ANY_SOURCE, TAG_BUFF_SIZE, server, &tmp_status);
+			char * buff = (char *)malloc(DNA_str_size);
+			MPI_Recv(buff, DNA_str_size, MPI_CHAR, MPI_ANY_SOURCE, TAG_BUFF, server, &tmp_status);
+
+			cout << "Received:\n" << buff << endl;
+		}
 	}
 	if (file)
 		file.close();

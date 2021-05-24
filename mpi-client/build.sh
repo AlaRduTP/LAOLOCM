@@ -1,0 +1,1 @@
+docker run --rm -v `pwd`:/home/mpi/src laolocm/ubuntu make -C src
