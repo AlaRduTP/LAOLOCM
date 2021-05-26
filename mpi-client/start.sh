@@ -1,1 +1,1 @@
-docker run --net=mpi-overlay --rm -w /home/mpi/gp -v `pwd`:/home/mpi/gp laolocm/ubuntu mpirun --ompi-server $1 -np 1 -q main output.txt
+docker run --net=mpi-overlay --rm -w /home/mpi/gp -v `pwd`:/home/mpi/gp laolocm/ubuntu mpirun --ompi-server $1 -np 1 -q /usr/bin/time -p ./main output.txt

@@ -114,8 +114,8 @@ public:
         getDamaged(target.attack());
         action += "ATTACK " + std::to_string(this->instanceID()) + " " + std::to_string(target.instanceID()) + ";";
     };
-    void calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack);
-    void calculateAttackScore(const CreatureCard &attacker, int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack);
+    void calculateUseScore(double enemyTotalHP, double ownTotalHP, double enemyTotalAttack, double ownTotalAttack);
+    void calculateAttackScore(const CreatureCard &attacker, double enemyTotalHP, double ownTotalHP, double enemyTotalAttack, double ownTotalAttack);
     void calculateRedItemScore(const Card &attacker);
     void calculateAttackOrderScore();
 
@@ -389,13 +389,13 @@ void Card::calculateGetScore()
     // score_ = {{exprs[0]}};
 }
 
-void CreatureCard::calculateUseScore(int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
+void CreatureCard::calculateUseScore(double enemyTotalHP, double ownTotalHP, double enemyTotalAttack, double ownTotalAttack)
 {
     // score_ = -attack_ / cost_;
     // score_ = ((((enemyTotalHP / sqrt(exp(((defense_ + sqrt(exp(((enemyTotalHP / sqrt(exp((defense_ + sqrt(exp(((cardDraw_ + sqrt(exp(ownTotalHP))) + p2((enemyTotalHP / sqrt(exp((defense_ - sqrt(exp((enemyTotalHP / sqrt(exp((defense_ + sqrt(exp(((cardDraw_ + sqrt(exp(ownTotalHP))) / enemyTotalHP) - p2(exp(exp(ownTotalHP)))))) - exp(myHealthChange_)))) - p2(p2(exp(cost_)))))) - exp(myHealthChange_)))) + sqrt(exp((defense_ * sqrt(exp(ownTotalHP))) - exp(cost_))))) - p2(p2(exp(sqrt(exp(cost_)))))))) - exp(myHealthChange_)))) + sqrt(sqrt(abilities_[3]))) - p2(exp(exp(log(sqrt(exp(cost_))))))))) + sqrt(exp(((abilities_[5] + sqrt(exp(exp(ownTotalHP)))) + sqrt(sqrt(log(sqrt(exp(cost_)))))) - p2(exp(exp(log(sqrt(exp(cost_))))))))) - exp(myHealthChange_)))) + sqrt(exp((defense_ * sqrt(exp(ownTotalHP))) - exp(cost_)))) - exp(cost_)) - myHealthChange_);
     score_ = {{exprs[0]}};
 }
-void CreatureCard::calculateAttackScore(const CreatureCard &attacker, int enemyTotalHP, int ownTotalHP, int enemyTotalAttack, int ownTotalAttack)
+void CreatureCard::calculateAttackScore(const CreatureCard &attacker, double enemyTotalHP, double ownTotalHP, double enemyTotalAttack, double ownTotalAttack)
 {
     if (abilities_[PLAYER]) // if there are no cards with Guard, attack the player first.
         score_ = -500;
