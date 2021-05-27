@@ -106,7 +106,7 @@ public:
 	int variable_index;
 	char operate;
 	int offspring_count = 0;
-	int tree_index;
+	int tree_index = 0; /* Just for hot fix, idk if this is correct. */
 
 	Node(int child_length) : parent(NULL), child_length(child_length)
 	{
