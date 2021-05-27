@@ -9,6 +9,7 @@ caller.h
 caller.o
 fitness.o
 main
+server
 main.o
 output.txt
 

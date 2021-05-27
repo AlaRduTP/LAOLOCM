@@ -84,6 +84,10 @@ make -C Agents/Chad/agent clean
 ### Server
 
 ```sh
+bash server-start.sh <number_of_islands> <number_of_migrations>
+```
+
+<!-- ```sh
 bash mpi-server/start.sh <number_of_islands> <number_of_migrations>
 ```
 
@@ -102,11 +106,15 @@ docker network create -d overlay --attachable mpi-overlay
 
 ```sh
 docker swarm join-token worker
-```
+``` -->
 
 ### Client
 
-Run the Server first, then the Client.  
+```sh
+bash client-start.sh <filename|none> <mpi-uri>
+```
+
+<!-- Run the Server first, then the Client.  
 You will get `<mpi-uri>` from the information when the Server starts.
 
 ```sh
@@ -121,4 +129,4 @@ For the first time, first run the following command:
 
 ```sh
 docker swarm join --token <join-token>
-```
+``` -->

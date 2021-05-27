@@ -1,0 +1,1 @@
+mpirun --ompi-server $2 -np 1 -q /usr/bin/time -p ./main $1
