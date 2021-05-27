@@ -52,14 +52,22 @@ rustup install nightly
 ### Server
 
 ```sh
-bash mpi-server/build.sh
+bash server-build.sh
 ```
+
+<!-- ```sh
+bash mpi-server/build.sh
+``` -->
 
 ### Client
 
 ```sh
-bash mpi-client/build.sh
+make
 ```
+
+<!-- ```sh
+bash mpi-client/build.sh
+``` -->
 
 #### clean
 
