@@ -92,11 +92,11 @@ make -C Agents/Chad/agent clean
 ### Server
 
 ```sh
-bash server-start.sh <number_of_islands> <number_of_migrations>
+bash server-start.sh <number_of_islands> <migration_frequency>
 ```
 
 <!-- ```sh
-bash mpi-server/start.sh <number_of_islands> <number_of_migrations>
+bash mpi-server/start.sh <number_of_islands> <migration_frequency>
 ```
 
 For the first time, first run the following commands:

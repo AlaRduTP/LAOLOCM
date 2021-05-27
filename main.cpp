@@ -17,7 +17,7 @@
 
 #define MPI_SIZE_T MPI_UNSIGNED_LONG_LONG
 
-#define TAG_MIGRATION 0
+#define TAG_MIGRAFREQ 0
 #define TAG_BUFF_SIZE 1
 #define TAG_BUFF 2
 
@@ -514,10 +514,9 @@ int main(int argc, char *argv[])
 
 	MPI_Status tmp_status;
 
-	int MAX_MIGRATIONS;
-	MPI_Recv(&MAX_MIGRATIONS, 1, MPI_SIZE_T, MPI_ANY_SOURCE, TAG_MIGRATION, server, &tmp_status);
+	int MIGRATION_FREQ;
+	MPI_Recv(&MIGRATION_FREQ, 1, MPI_SIZE_T, MPI_ANY_SOURCE, TAG_MIGRAFREQ, server, &tmp_status);
 
-	const int MIGRATION_FREQ = 0 < MAX_MIGRATIONS ? GENERATION_COUNT / MAX_MIGRATIONS : GENERATION_COUNT + 1;
 	cout << "Migration frequency: " << MIGRATION_FREQ << endl;
 
 	fitness_initialize();
@@ -581,7 +580,7 @@ int main(int argc, char *argv[])
 		if (DNAs[0]->fitness() >= 80)
 			break;
 
-		if (migration < MAX_MIGRATIONS && (generation + 1) % MIGRATION_FREQ == 0)
+		if ((generation + 1) % MIGRATION_FREQ == 0)
 		{
 			cout << "\nMigration " << migration++ << endl;
 

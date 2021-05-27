@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -6,7 +7,7 @@
 
 #define MPI_SIZE_T MPI_UNSIGNED_LONG_LONG
 
-#define TAG_MIGRATION	0
+#define TAG_MIGRAFREQ	0
 #define TAG_BUFF_SIZE	1
 #define TAG_BUFF	2
 
@@ -38,7 +39,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	const int NUM_CLIENTS = atoi(argv[1]);
-	const int MAX_MIGRATIONS = atoi(argv[2]);
+	const int MIGRATION_FREQ = atoi(argv[2]);
 
 	MPI_Init(&argc, &argv);
 	atexit(finalize_handler);
@@ -63,14 +64,15 @@ int main(int argc, char * argv[]) {
 		const size_t i = client - clients;
 
 		MPI_Comm_accept(port_name, MPI_INFO_NULL, 0, MPI_COMM_SELF, &client->comm);
-		MPI_Send(&MAX_MIGRATIONS, 1, MPI_INT, 0, TAG_MIGRATION, client->comm);
+		MPI_Send(&MIGRATION_FREQ, 1, MPI_INT, 0, TAG_MIGRAFREQ, client->comm);
 
 		printf("Client [%zu] connected.\n", i);
 	}
 
-	for (size_t migration = 0; migration < MAX_MIGRATIONS; ++migration)
+	size_t migration = 0;
+	while (true)
 	{
-		printf("* Migration [%zu]\n", migration);
+		printf("* Migration [%zu]\n", migration++);
 		MPI_Request requests[NUM_CLIENTS];
 		MPI_Status tmp_status[NUM_CLIENTS];
 
@@ -96,10 +98,5 @@ int main(int argc, char * argv[]) {
 			MPI_Send(client->buffer, client->size, MPI_CHAR, 0, TAG_BUFF, clients[next].comm);
 			printf("Send message to Client [%zu].\n", client - clients);
 		}
-	}
-
-	for_each_client(client, clients) {
-		MPI_Comm_free(&client->comm);
-		free(client->buffer);
 	}
 }
