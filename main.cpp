@@ -11,7 +11,6 @@
 #include "fitness.h"
 #include <stack>
 #include <random>
-#include <chrono> /* systemclock */
 
 #include <mpi.h>
 
@@ -584,10 +583,8 @@ int main(int argc, char *argv[])
 		{
 			cout << "\nMigration " << migration++ << endl;
 
-			shuffle(DNAs, DNAs + LEFT_AMOUNT, default_random_engine(chrono::system_clock::now().time_since_epoch().count()));
-
 			ostringstream oss;
-			for (int j = LEFT_AMOUNT * (1 - MIGRATION_RATE); j < LEFT_AMOUNT; j++)
+			for (int j = 0; j < LEFT_AMOUNT * MIGRATION_RATE; j++)
 				oss << DNAs[j]->trees[0]->to_string() << endl;
 			string DNA_str = oss.str();
 
@@ -607,7 +604,7 @@ int main(int argc, char *argv[])
 			string DNA_input = string(buff);
 			string delimiter = "\n";
 
-			for (int j = LEFT_AMOUNT * (1 - MIGRATION_RATE); j < LEFT_AMOUNT; j++)
+			for (int j = LEFT_AMOUNT - static_cast<int>(LEFT_AMOUNT*MIGRATION_RATE); j < LEFT_AMOUNT; j++)
 			{
 				auto pos = DNA_input.find(delimiter);
 				if(pos == string::npos)
